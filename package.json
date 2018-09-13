@@ -1,0 +1,9 @@
+{
+  "name": "sigo_v2",
+  "version": "2.0.0",
+  "description": "seoul it high school facebook page service",
+  "main": "index.ts",
+  "repository": "https://github.com/bugMakesMoney/sigo_v2",
+  "author": "kinddfull",
+  "license": "MIT"
+}
