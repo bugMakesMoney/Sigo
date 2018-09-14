@@ -6,6 +6,10 @@
   "repository": "https://github.com/bugMakesMoney/sigo_v2",
   "author": "kinddfull",
   "license": "MIT",
+  "scripts": {
+    "tsc--watch": "tsc -w",
+    "test--watch": "nodemon --watch lib/ --watch app.js app.js"
+  },
   "engines": {
     "node": "v10.6.0",
     "yarn": "1.7.0"
@@ -14,5 +18,10 @@
     "tslint-config-airbnb": "^5.11.0",
     "typescript": "^3.0.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "global": "^4.3.2",
+    "ts-node": "^7.0.1"
+  }
 }

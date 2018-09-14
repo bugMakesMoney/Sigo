@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "esnext",
+    "target": "es6",
+    "module": "commonjs",
     "moduleResolution": "node",
-    "baseUrl": "./",
-    "paths": {
-      "@src/*": ["./src/*"],
-    },
-
-    "allowJs": true,
+    "outDir": "./lib",
+    "locale": "ko",
+    "pretty": true,
+    "watch": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2017"]
   },
+  "include": [
+    "./src/**/*.ts*",
+  ],
   "exclude": [
     "node_modules"
   ]
