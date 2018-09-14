@@ -2,8 +2,8 @@ import { ConfigModel } from '../model/ConfigModel'
 import { AppConfigKey, PageConfigKey } from '../constants/config'
 
 export const configKeyValidation = (config: ConfigModel) => {
-  const configKeys = Object.keys(config)
   if (!config) throw new Error('config is not defined')
+  const configKeys = Object.keys(config)
   if (!configKeys.length) throw new Error('config is empty')
   const isPageInfo = Boolean(config.pageId || config.pageToken)
   const DefaultConfigKey = AppConfigKey.concat(isPageInfo ? PageConfigKey : [])
