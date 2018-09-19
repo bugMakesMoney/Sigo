@@ -6,7 +6,7 @@ export class appConfig {
   private readonly appSecret: string
   private readonly accessToken: string
   private readonly verifyToken: string
-  private readonly pageId?: number
+  private readonly pageId?: string
   private readonly pageToken?: string
   private readonly webhook: string
   private readonly endpoint: string

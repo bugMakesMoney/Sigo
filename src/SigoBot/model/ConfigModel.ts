@@ -2,7 +2,7 @@ export interface ConfigModel {
   appSecret: string
   accessToken: string
   verifyToken: string
-  pageId?: number
+  pageId?: string
   pageToken?: string
 }
 

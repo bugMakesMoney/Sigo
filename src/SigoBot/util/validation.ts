@@ -15,12 +15,18 @@ export const configKeyValidation = (config: ConfigModel) => {
 
 export const configValueValidation = (config: ConfigModel) => {
   return Object.entries(config).every(([key, value]) => {
-    if (key === 'pageId') return typeCheck(key, value, 'number')
-    return typeCheck(key, value, 'string')
+    return isValueCheck(key, value) ? typeCheck(key, value, 'string') : false
   })
 }
 
-const typeCheck = (key: string, value: string | number, type: string) => {
+const isValueCheck = (key: string, value: any) => {
+  if (!value) {
+    throw new Error(`The value of ${key} is null`)
+  }
+  return true
+}
+
+const typeCheck = (key: string, value: any, type: string) => {
   if (typeof value !== type) {
     throw new Error(`The value of ${key} must be ${type}, `)
   }
