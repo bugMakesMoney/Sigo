@@ -1,5 +1,5 @@
 import { AppConfigModel, ConfigModel } from '../model/ConfigModel'
-import { configKeyValidation, configValueValidation } from '../util/validation'
+import { configKeyValidation, configValueValidation } from '../utils/validation'
 import { WebhookUrl, Endpoint, EndpointVersion } from '../constants/config'
 
 export class appConfig {
