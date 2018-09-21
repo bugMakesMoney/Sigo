@@ -1,12 +1,14 @@
 const express = require('express')()
 
 const SigoBot = require('./lib')
+require('dotenv').config()
+
+const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
 
 const config = {
-  appSecret: '3c7a370c9d826d3206d1c1559e97e83e',
-  accessToken:
-    'EAADXqsSmDEYBAPZCgUFSZASs5maoTbhi8O20xnRCS3iJaaQl1p7JHE1DJ5RIfO20UZAGzwi6sqisri0vTAtzKbAtjVJYWAVYZAPvaZC6gYq0qgMSrqkntYgsLAjLbQwcEHQUkJwVZC8puwOUWftQD32hbVI4FRa0tBnqqbH9Lo9gMGkR5suBvc',
-  verifyToken: 'sigo',
+  appSecret: APP_SECRET,
+  accessToken: ACCESS_TOKEN,
+  verifyToken: VERIFY_TOKEN,
 }
 
 const port = process.env.PORT || 8080
