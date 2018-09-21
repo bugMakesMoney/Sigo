@@ -1,7 +1,7 @@
 const express = require('express')()
 
 const SigoBot = require('./lib')
-require('dotenv').config()
+// require('dotenv').config()
 
 const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
 
