@@ -10,12 +10,12 @@
     "start": "node app.js"
   },
   "engines": {
-    "node": "v10.6.0",
-    "yarn": "1.9.4",
-    "npm": "6.1.0"
+    "node": "10.6.0"
   },
   "dependencies": {
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
     "dotenv": "^6.0.0"
