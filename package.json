@@ -2,22 +2,32 @@
   "name": "sigo",
   "version": "1.0.0",
   "description": "seoul it high school facebook page service",
-  "main": "app.js",
+  "main": "index.js",
   "repository": "https://github.com/bugMakesMoney/sigo",
   "author": "kinddfull",
   "license": "MIT",
   "scripts": {
-    "start": "node app.js"
+    "start": "node build/index.js",
+    "build": "tsc",
+    "postinstall": "concurrently \"rm -rf build \" \"tsc\"  \"mkdir -p build/lib\" \"cp -r lib build/lib\"",
+    "tsc--watch": "tsc -w",
+    "test--watch": "nodemon --watch build/ --watch src/ build/index.js"
   },
   "engines": {
     "node": "10.6.0"
   },
   "dependencies": {
+    "@types/node": "^10.10.1",
+    "cheerio": "^1.0.0-rc.2",
     "express": "^4.16.3",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "ts-node": "^7.0.1"
   },
   "devDependencies": {
-    "dotenv": "^6.0.0"
+    "@types/cheerio": "^0.22.9",
+    "concurrently": "^4.0.1",
+    "tslint-config-airbnb": "^5.11.0",
+    "typescript": "^3.0.3"
   }
 }
