@@ -9,7 +9,7 @@ import {
 } from '../model/cafeteriaModel'
 import { parseCafeteria } from '../utils/parse'
 import { cafeteriaUrl } from '../constants/url'
-import { moduleType } from '../constants/matchTypes'
+import { TYPE } from '../constants/matchTypes'
 
 export default class cafeteria extends base {
   private _url: string
@@ -83,22 +83,24 @@ export default class cafeteria extends base {
   public getCafeteria = (options?) => {
     const { type, value } = (this.options = options)
     const { date } = this.currentDate
-    if (type === moduleType.ERROR)
+    if (type === TYPE.ERROR)
       return {
         date: {
           index: value,
           type,
         },
       }
-    if (type === moduleType.TODAY)
+    if (type === TYPE.TODAY)
       return parseCafeteria<DayCafeteriaModel>(this.data, date, type)
-    if (type === moduleType.TOMORROW)
+    if (type === TYPE.TOMORROW)
       return parseCafeteria<DayCafeteriaModel>(this.data, date + 1, type)
-    if (type === moduleType.TARGET)
+    if (type === TYPE.TARGET)
       return parseCafeteria<DayCafeteriaModel>(this.data, value, type)
-    if (type === moduleType.THIS)
+    if (type === TYPE.DAYKO)
+      return parseCafeteria<DayCafeteriaModel>(this.data, date, type, value)
+    if (type === TYPE.THIS)
       return parseCafeteria<WeekCafeteriaModel>(this.data, date, type)
-    if (type === moduleType.NEXT)
+    if (type === TYPE.NEXT)
       return parseCafeteria<WeekCafeteriaModel>(this.data, date + 7, type)
   }
 }

@@ -1,3 +1,5 @@
+import dateTypes from './dateTypes'
+
 export const matchType = [
   {
     title: 'cafeteria',
@@ -12,7 +14,7 @@ export const matchType = [
     values: ['날씨'],
   },
 ]
-
+const DayOfWeek = dateTypes.DayOfWeek.slice(1, -1)
 export const cafeteriaMatch = [
   {
     title: 'today',
@@ -32,9 +34,17 @@ export const cafeteriaMatch = [
   },
   {
     title: 'target',
-    values: Array.from({ length: 31 }, (v, k) => (k + 1).toString()),
+    values: dateTypes.Day,
+  },
+  {
+    title: 'dayko',
+    values: DayOfWeek.concat(Array.from(DayOfWeek, d => d + '요')).concat(
+      Array.from(DayOfWeek, d => d + '욜')
+    ),
   },
 ]
+
+export const dayOfWeekMatch = DayOfWeek
 
 export const scheduleMatch = [
   {
@@ -47,7 +57,7 @@ export const scheduleMatch = [
   },
   {
     title: 'target',
-    values: Array.from({ length: 12 }, (v, k) => (k + 1).toString),
+    values: dateTypes.Month,
   },
   {
     title: 'all',
@@ -55,13 +65,19 @@ export const scheduleMatch = [
   },
 ]
 
-export const moduleType = {
+export const MODULE = {
   CAFETERIA: 'cafeteria',
   SCHEDULE: 'schedule',
+  ECHO: 'echo',
+}
+
+export const TYPE = {
   TODAY: 'today',
   TOMORROW: 'tomorrow',
   TARGET: 'target',
   NEXT: 'next',
   THIS: 'this',
+  DAYKO: 'dayko',
   ERROR: 'error',
+  OVERLAP: 'overlap',
 }

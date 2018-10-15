@@ -2,11 +2,15 @@ import * as Fuse from 'fuse.js'
 import {
   matchType,
   cafeteriaMatch,
-  moduleType,
+  TYPE,
+  MODULE,
   scheduleMatch,
+  dayOfWeekMatch,
 } from '../constants/matchTypes'
 import { MatchResultModel } from '../model/matchModel'
 import { MatchCafeteriaModel } from '../model/cafeteriaModel'
+import cafeteria from '../modules/cafeteria'
+import dateTypes from '../constants/dateTypes'
 const options = {
   keys: ['values'],
   threshold: 1,
@@ -16,8 +20,9 @@ const options = {
 const matchCafeteria = (text: string): MatchCafeteriaModel => {
   const { item: { title: type = 'today' } = {} } =
     matchText(cafeteriaMatch, options, text)[0] || ({} as MatchResultModel)
-  let value = text.replace(/[^0-9]/g, '')
-  if (type === moduleType.TARGET) {
+  let value
+  if (type === TYPE.TARGET) {
+    text = text.replace(/[^0-9]/g, '')
     try {
       value = matchText(
         cafeteriaMatch,
@@ -25,16 +30,36 @@ const matchCafeteria = (text: string): MatchCafeteriaModel => {
           ...options,
           threshold: 0,
         },
-        value
+        text
       )[0].matches[0].value
     } catch {
       return {
-        module: moduleType.CAFETERIA,
+        module: MODULE.CAFETERIA,
         options: { type: 'error', value },
       }
     }
   }
-  return { module: moduleType.CAFETERIA, options: { type, value } }
+  if (type === TYPE.DAYKO) {
+    text = text.replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/gi, '')
+    try {
+      value = dayOfWeekMatch.indexOf(
+        matchText(
+          dayOfWeekMatch,
+          {
+            ...options,
+            keys: [],
+          },
+          text
+        )[0].matches[0].value
+      )
+    } catch {
+      return {
+        module: MODULE.CAFETERIA,
+        options: { type: 'error', value },
+      }
+    }
+  }
+  return { module: MODULE.CAFETERIA, options: { type, value } }
 }
 
 const matchSchedule = (text: string): MatchCafeteriaModel => {
@@ -44,7 +69,7 @@ const matchSchedule = (text: string): MatchCafeteriaModel => {
     text || 'this'
   )[0]
 
-  return { module: moduleType.SCHEDULE, options: { type: 'type', value: 0 } }
+  return { module: MODULE.SCHEDULE, options: { type: 'type', value: 0 } }
 }
 
 const matchText = (matchList, options, text): MatchResultModel[] => {
@@ -56,11 +81,13 @@ export const matchModule = (text: string) => {
   const modules = matchText(matchType, options, text).filter(
     module => module.matches.length > 0 && module.score !== 0.001
   )
+
   if (modules.length) {
     const isOverlap =
       modules.every(module => module.score === modules[0].score) &&
       modules.length > 1
     if (isOverlap) {
+      return matchOverlap(modules)
     } else {
       const priority = modules.reduce(
         (acc, cur) => (acc.score > cur.score ? cur : acc)
@@ -68,7 +95,7 @@ export const matchModule = (text: string) => {
       return matchPriority(priority, text)
     }
   }
-  return { module: moduleType.SCHEDULE, options: { type: 'today', value: 5 } }
+  return { module: MODULE.ECHO, options: { type: 'today', value: 5 } }
 }
 
 const matchPriority = (module: MatchResultModel, text: string) => {
@@ -80,9 +107,16 @@ const matchPriority = (module: MatchResultModel, text: string) => {
 }
 
 const matchOverlap = (modules: MatchResultModel[]) => {
+  // return { module: MODULE.ECHO, options: { type: 'today', value: 5 } }
+
+  // return {
+  //   type: 'overlap',
+  // }
   return {
     module: modules.map(({ item: { title } }) => title),
-    type: 'overlap',
-    value: modules.map(({ matches }) => matches.map(m => m.value).join(',')),
+    options: {
+      type: 'overlap',
+      value: modules.map(({ matches }) => matches.map(m => m.value).join(',')),
+    },
   }
 }

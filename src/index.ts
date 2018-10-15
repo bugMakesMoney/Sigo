@@ -2,23 +2,18 @@ import * as Express from 'express'
 import { fbMessenger, EventTypes } from '../lib'
 import Cafeteria from './modules/cafeteria'
 import { matchModule } from './utils/match'
-import { moduleType } from './constants/matchTypes'
-import { sendCafeteria } from './bot'
+import { MODULE, TYPE } from './constants/matchTypes'
+import { sendCafeteria, sendOverlap } from './bot'
 const express = Express()
 
 const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
 
-// const config = {
-//   appSecret: APP_SECRET,
-//   accessToken: ACCESS_TOKEN,
-//   verifyToken: VERIFY_TOKEN,
-// }
 const config = {
-  appSecret: '3c7a370c9d826d3206d1c1559e97e83e',
-  accessToken:
-    'EAADXqsSmDEYBAPZCgUFSZASs5maoTbhi8O20xnRCS3iJaaQl1p7JHE1DJ5RIfO20UZAGzwi6sqisri0vTAtzKbAtjVJYWAVYZAPvaZC6gYq0qgMSrqkntYgsLAjLbQwcEHQUkJwVZC8puwOUWftQD32hbVI4FRa0tBnqqbH9Lo9gMGkR5suBvc',
-  verifyToken: 'sigo',
+  appSecret: APP_SECRET,
+  accessToken: ACCESS_TOKEN,
+  verifyToken: VERIFY_TOKEN,
 }
+
 const port = process.env.PORT || 8000
 
 const server = require('http').Server(express)
@@ -34,11 +29,21 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
     if (message.isText()) {
       const { module, options } = matchModule(message.getText())
       // console.log(cafeteria.getCafeteria(options))
-      if (module === moduleType.CAFETERIA) {
+      // console.log(sendCafeteria(cafeteria.getCafeteria(options)))
+      if (module === MODULE.CAFETERIA) {
         return await app.sendTextMessage(
           userId,
           sendCafeteria(cafeteria.getCafeteria(options))
         )
+      }
+      if (module === MODULE.SCHEDULE) {
+        console.log(module)
+      }
+      if (module === MODULE.ECHO) {
+        return await app.sendTextMessage(userId, message.getText())
+      }
+      if (options.type === TYPE.OVERLAP) {
+        sendOverlap(module, options)
       }
     }
   } catch (e) {
