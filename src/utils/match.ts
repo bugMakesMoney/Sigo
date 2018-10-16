@@ -9,14 +9,14 @@ import {
 } from '../constants/matchTypes'
 import { MatchResultModel } from '../model/matchModel'
 import { MatchCafeteriaModel } from '../model/cafeteriaModel'
-import cafeteria from '../modules/cafeteria'
-import dateTypes from '../constants/dateTypes'
+
 const options = {
   keys: ['values'],
   threshold: 1,
   includeMatches: true,
   includeScore: true,
 }
+
 const matchCafeteria = (text: string): MatchCafeteriaModel => {
   const { item: { title: type = 'today' } = {} } =
     matchText(cafeteriaMatch, options, text)[0] || ({} as MatchResultModel)
@@ -24,14 +24,19 @@ const matchCafeteria = (text: string): MatchCafeteriaModel => {
   if (type === TYPE.TARGET) {
     text = text.replace(/[^0-9]/g, '')
     try {
-      value = matchText(
+      const [
+        {
+          matches: [{ value: resultValue }],
+        },
+      ] = matchText(
         cafeteriaMatch,
         {
           ...options,
           threshold: 0,
         },
         text
-      )[0].matches[0].value
+      )
+      value = resultValue
     } catch {
       return {
         module: MODULE.CAFETERIA,
@@ -42,16 +47,19 @@ const matchCafeteria = (text: string): MatchCafeteriaModel => {
   if (type === TYPE.DAYKO) {
     text = text.replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/gi, '')
     try {
-      value = dayOfWeekMatch.indexOf(
-        matchText(
-          dayOfWeekMatch,
-          {
-            ...options,
-            keys: [],
-          },
-          text
-        )[0].matches[0].value
+      const [
+        {
+          matches: [{ value: resultValue }],
+        },
+      ] = matchText(
+        dayOfWeekMatch,
+        {
+          ...options,
+          keys: [],
+        },
+        text
       )
+      value = dayOfWeekMatch.indexOf(resultValue)
     } catch {
       return {
         module: MODULE.CAFETERIA,
@@ -61,15 +69,37 @@ const matchCafeteria = (text: string): MatchCafeteriaModel => {
   }
   return { module: MODULE.CAFETERIA, options: { type, value } }
 }
-
 const matchSchedule = (text: string): MatchCafeteriaModel => {
-  const type = matchText(
-    scheduleMatch,
-    { keys: ['values'], threshold: 0 },
-    text || 'this'
-  )[0]
-
-  return { module: MODULE.SCHEDULE, options: { type: 'type', value: 0 } }
+  const [
+    {
+      item: { title: type = 'this' },
+    },
+  ] = matchText(scheduleMatch, options, text || 'this')
+  let value
+  if (type === TYPE.TARGET) {
+    text = text.replace(/[^0-9]/g, '')
+    try {
+      const [
+        {
+          matches: [{ value: resultValue }],
+        },
+      ] = matchText(
+        scheduleMatch,
+        {
+          ...options,
+          threshold: 0,
+        },
+        text
+      )
+      value = resultValue
+    } catch {
+      return {
+        module: MODULE.SCHEDULE,
+        options: { type: 'error', value },
+      }
+    }
+  }
+  return { module: MODULE.SCHEDULE, options: { type, value } }
 }
 
 const matchText = (matchList, options, text): MatchResultModel[] => {
@@ -79,12 +109,11 @@ const matchText = (matchList, options, text): MatchResultModel[] => {
 export const matchModule = (text: string) => {
   text = text.replace(/ /gi, '')
   const modules = matchText(matchType, options, text).filter(
-    module => module.matches.length > 0 && module.score !== 0.001
+    ({ matches: { length }, score }) => length > 0 && score !== 0.001
   )
-
   if (modules.length) {
     const isOverlap =
-      modules.every(module => module.score === modules[0].score) &&
+      modules.every(({ score }) => score === modules[0].score) &&
       modules.length > 1
     if (isOverlap) {
       return matchOverlap(modules)
@@ -107,16 +136,13 @@ const matchPriority = (module: MatchResultModel, text: string) => {
 }
 
 const matchOverlap = (modules: MatchResultModel[]) => {
-  // return { module: MODULE.ECHO, options: { type: 'today', value: 5 } }
-
-  // return {
-  //   type: 'overlap',
-  // }
   return {
     module: modules.map(({ item: { title } }) => title),
     options: {
       type: 'overlap',
-      value: modules.map(({ matches }) => matches.map(m => m.value).join(',')),
+      value: modules.map(({ matches }) =>
+        matches.map(({ value }) => value).join(',')
+      ),
     },
   }
 }

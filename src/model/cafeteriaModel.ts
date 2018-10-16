@@ -5,20 +5,9 @@ export interface DateModel {
   date: number
 }
 
-export interface CafeteriaModel<T> {
+export interface CafeteriaModel {
   data: string
-  date: T
-}
-export interface DayCafeteriaModel {
-  index: number
   type: string
-  ko: string
-}
-
-export interface WeekCafeteriaModel {
-  index: number[]
-  type: string
-  ko: string[]
 }
 
 export interface MatchCafeteriaModel {

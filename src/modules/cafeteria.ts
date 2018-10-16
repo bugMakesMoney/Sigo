@@ -2,34 +2,22 @@ import * as cheerio from 'cheerio'
 import * as request from 'request-promise'
 
 import base from './base'
-import {
-  DateModel,
-  DayCafeteriaModel,
-  WeekCafeteriaModel,
-} from '../model/cafeteriaModel'
+import { DateModel, CafeteriaModel } from '../model/cafeteriaModel'
 import { parseCafeteria } from '../utils/parse'
 import { cafeteriaUrl } from '../constants/url'
 import { TYPE } from '../constants/matchTypes'
 
 export default class cafeteria extends base {
-  private _url: string
-  private _data: Cheerio
   private _rmqtlr: any
-  private _options: any
-  constructor(date?: DateModel) {
+  constructor(targetDate?: number | string) {
     super()
-    this._url = cafeteriaUrl
-    this.loadCafeteria(date)
-  }
-  get url() {
-    return this._url
-  }
-
-  set url(url) {
-    this._url = url
+    this.url = targetDate
+      ? cafeteriaUrl.replace(`{targetDate}`, targetDate.toString())
+      : cafeteriaUrl
+    this.loadCafeteria()
   }
 
-  get prmqtlr() {
+  get rmqtlr() {
     return this._rmqtlr
   }
 
@@ -37,70 +25,49 @@ export default class cafeteria extends base {
     this._rmqtlr = rmqtlr
   }
 
-  get data() {
-    return this._data
-  }
-
-  set data(data) {
-    this._data = data
-  }
-
-  get options() {
-    return this._options
-  }
-
-  set options(options) {
-    this._options = options
-  }
-
   private loadCafeteria = async (date?: DateModel) => {
     let targetDate: string
-    if (date) {
-      targetDate = date.year.toString() + date.month.toString()
-    } else {
-      const date = new Date()
-      this.currentDate = {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        hour: date.getHours(),
-        date: date.getDate(),
-      }
-      const { year, month } = this.currentDate
-      targetDate = year.toString() + month.toString()
-    }
+    this.currentDate = this.reloadCurrentDate()
+    const { year, month } = date || this.currentDate
+    targetDate = year.toString() + month.toString()
     this.url = this.url.replace('{targetDate}', targetDate)
+    console.log(this.url)
     await request(this.url, (err, res, body) => {
       if (err) console.log('err', err)
       const data = cheerio.load(body, {
         decodeEntities: false,
         normalizeWhitespace: false,
       })
-
       this.data = data('tbody')
       console.log('load cafeteria data')
     })
+    console.log(year, month)
   }
   public getCafeteria = (options?) => {
+    let { date: _reloadDate } = (this.currentDate = this.reloadCurrentDate())
+    if (_reloadDate !== this.currentDate.date) {
+      console.log('date is changed. load new cafeteria')
+      this.loadCafeteria()
+    }
+    if (JSON.stringify(this.options) === JSON.stringify(options)) {
+      console.log('same options')
+      return this.rmqtlr
+    }
     const { type, value } = (this.options = options)
     const { date } = this.currentDate
-    if (type === TYPE.ERROR)
-      return {
-        date: {
-          index: value,
-          type,
-        },
-      }
-    if (type === TYPE.TODAY)
-      return parseCafeteria<DayCafeteriaModel>(this.data, date, type)
+
+    if (type === TYPE.TODAY) this.rmqtlr = parseCafeteria(this.data, date, type)
     if (type === TYPE.TOMORROW)
-      return parseCafeteria<DayCafeteriaModel>(this.data, date + 1, type)
+      this.rmqtlr = parseCafeteria(this.data, date + 1, type)
     if (type === TYPE.TARGET)
-      return parseCafeteria<DayCafeteriaModel>(this.data, value, type)
+      this.rmqtlr = parseCafeteria(this.data, value, type)
     if (type === TYPE.DAYKO)
-      return parseCafeteria<DayCafeteriaModel>(this.data, date, type, value)
-    if (type === TYPE.THIS)
-      return parseCafeteria<WeekCafeteriaModel>(this.data, date, type)
+      this.rmqtlr = parseCafeteria(this.data, date, type, value)
+    if (type === TYPE.THIS) this.rmqtlr = parseCafeteria(this.data, date, type)
     if (type === TYPE.NEXT)
-      return parseCafeteria<WeekCafeteriaModel>(this.data, date + 7, type)
+      this.rmqtlr = parseCafeteria(this.data, date + 7, type)
+    if (type === TYPE.ERROR) this.rmqtlr = { date: { index: value, type } }
+
+    return this.rmqtlr
   }
 }

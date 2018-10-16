@@ -25,11 +25,11 @@ express.use(app.setWebhook('/webhook'))
 const cafeteria: Cafeteria = new Cafeteria()
 
 app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
+  const firstTime = new Date().getTime()
   try {
     if (message.isText()) {
       const { module, options } = matchModule(message.getText())
       // console.log(cafeteria.getCafeteria(options))
-      // console.log(sendCafeteria(cafeteria.getCafeteria(options)))
       if (module === MODULE.CAFETERIA) {
         return await app.sendTextMessage(
           userId,
@@ -37,7 +37,7 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
         )
       }
       if (module === MODULE.SCHEDULE) {
-        console.log(module)
+        console.log(module, options)
       }
       if (module === MODULE.ECHO) {
         return await app.sendTextMessage(userId, message.getText())
@@ -48,6 +48,9 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
     }
   } catch (e) {
     console.log(e)
+  } finally {
+    const lastTime = new Date().getTime()
+    console.log('log time : ', lastTime - firstTime)
   }
 })
 
