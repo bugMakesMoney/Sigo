@@ -9,10 +9,13 @@ import { TYPE } from '../constants/matchTypes'
 
 export default class cafeteria extends base {
   private _rmqtlr: any
-  constructor(targetDate?: number | string) {
+  constructor(targetMonth?: number | string) {
     super()
-    this.url = targetDate
-      ? cafeteriaUrl.replace(`{targetDate}`, targetDate.toString())
+    this.url = targetMonth
+      ? cafeteriaUrl.replace(
+          '{targetDate}',
+          new Date().getFullYear().toString() + targetMonth.toString()
+        )
       : cafeteriaUrl
     this.loadCafeteria()
   }
@@ -31,17 +34,17 @@ export default class cafeteria extends base {
     const { year, month } = date || this.currentDate
     targetDate = year.toString() + month.toString()
     this.url = this.url.replace('{targetDate}', targetDate)
-    console.log(this.url)
-    await request(this.url, (err, res, body) => {
-      if (err) console.log('err', err)
+    try {
+      const body = await request(this.url)
       const data = cheerio.load(body, {
         decodeEntities: false,
         normalizeWhitespace: false,
       })
       this.data = data('tbody')
       console.log('load cafeteria data')
-    })
-    console.log(year, month)
+    } catch (err) {
+      console.log('load cafeteria err', err)
+    }
   }
   public getCafeteria = (options?) => {
     let { date: _reloadDate } = (this.currentDate = this.reloadCurrentDate())
@@ -66,7 +69,7 @@ export default class cafeteria extends base {
     if (type === TYPE.THIS) this.rmqtlr = parseCafeteria(this.data, date, type)
     if (type === TYPE.NEXT)
       this.rmqtlr = parseCafeteria(this.data, date + 7, type)
-    if (type === TYPE.ERROR) this.rmqtlr = { date: { index: value, type } }
+    if (type === TYPE.ERROR) this.rmqtlr = { type }
 
     return this.rmqtlr
   }

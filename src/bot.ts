@@ -23,7 +23,20 @@ export const sendCafeteria = cafeteria => {
   }
 }
 
-export const sendOverlap = (module, options) => {
-  console.log(module, options)
-  return `${options.value.join('')}`
+export const sendSchedule = schedule => {
+  try {
+    const { type, data } = schedule
+    console.log('send schedule')
+    console.log('type : ', type)
+    console.log('data : ', data ? '\n' + data : 'no schedule')
+    if (type === TYPE.THIS) return `이빈 달 일정입니다\n\n${data}`
+    if (type === TYPE.NEXT) return `다음 달 일정입니다\n\n${data}`
+    if (type === TYPE.TARGET) return data
+    if (type === TYPE.ALL) return `이번 년도 전체 일정입니다\n${data}`
+    if (type === TYPE.ERROR) return `올바른 날짜를 입력해주세요`
+  } catch {
+    return 'aa'
+  }
 }
+
+export const sendOverlap = options => `${options.value.join('? ')}?`

@@ -1,6 +1,88 @@
+import * as request from 'request-promise'
+import * as cheerio from 'cheerio'
+
 import dateTypes from '../constants/dateTypes'
 import { CafeteriaModel } from '../model/cafeteriaModel'
 import { TYPE } from '../constants/matchTypes'
+import { scheduleUrl } from '../constants/url'
+
+const loadNewSchedule = async index => {
+  const targetUrl = scheduleUrl
+    .replace('{year}', new Date().getFullYear().toString())
+    .replace('{month}', index < 10 ? '0' + index.toString() : index.toString())
+  try {
+    const body = await request(targetUrl)
+    const data = cheerio.load(body, {
+      normalizeWhitespace: false,
+      xmlMode: false,
+      decodeEntities: true,
+    })
+    return data('tbody')
+  } catch (err) {
+    return err
+  }
+}
+
+const commonParseSchedule = data => {
+  try {
+    return data
+      .find('div')
+      .toArray()
+      .filter(({ children }) => children.some(({ name }) => name === 'a'))
+      .map(({ children }) => children)
+      .map(e =>
+        e
+          .filter(({ name }) => name === 'em' || name === 'a')
+          .map(({ children }) =>
+            children
+              .filter(({ data, children }) => Number(data) || children)
+              .map(
+                ({ data, children }) =>
+                  data ? `${data}일` : children.map(({ data }) => data).join('')
+              )
+              .join('')
+          )
+          .join('\n')
+      )
+      .join('\n\n')
+  } catch {
+    return '일정이 없습니다'
+  }
+}
+
+export const parseSchedule = async (
+  dlfwjd: Cheerio,
+  index: number,
+  type: string
+) => {
+  if (type === TYPE.THIS) {
+    return {
+      type,
+      data: `${index}월 일정\n\n${commonParseSchedule(dlfwjd)}`,
+    }
+  }
+  if (type === TYPE.TARGET || type === TYPE.NEXT) {
+    return {
+      type,
+      data: `${index}월 일정\n\n${commonParseSchedule(
+        await loadNewSchedule(index)
+      )}`,
+    }
+  }
+  if (type === TYPE.ALL) {
+    const allSchedules = dateTypes.Month.map(async month => {
+      return `\n${month}월 일정\n\n${commonParseSchedule(
+        await loadNewSchedule(month)
+      )}`
+    })
+    return Promise.all(allSchedules).then(data => {
+      return {
+        type,
+        data: data.join('\n'),
+      }
+    })
+  }
+}
 
 export const parseCafeteria = (
   rmqtlr: Cheerio,
@@ -21,7 +103,6 @@ export const parseCafeteria = (
       data: parseWeekCafeteria(currentData),
     }
   }
-
   if (type === TYPE.DAYKO) {
     return {
       type,
@@ -57,13 +138,12 @@ const parseTargetCafeteria = (
       children.find(({ firstChild: { data } }) => {
         if (data === index.toString()) {
           targetIndex = i
-          console.log(data, index, i)
           return true
         }
       })
     )
-    .map(({ firstChild: { children } }, index) =>
-      children
+    .map(({ firstChild: { children } }, index) => {
+      return children
         .filter(({ data }) => data)
         .map(({ data }) => data)
         .filter((e, i, a) => e !== a[1])
@@ -77,7 +157,7 @@ const parseTargetCafeteria = (
         })
         .join('\n')
         .replace(/[0-9]*\./g, '')
-    )
+    })
     .toString()
 }
 
@@ -88,8 +168,8 @@ const parseWeekCafeteria = ({
 }: CheerioElement) => {
   return children
     .filter(({ children }) => children)
-    .map(({ firstChild: { children } }, index) =>
-      children
+    .map(({ firstChild: { children } }, index) => {
+      return children
         .filter(({ data }) => data)
         .map(({ data }) => data)
         .filter((e, i, a) => e !== a[1])
@@ -101,7 +181,7 @@ const parseWeekCafeteria = ({
             : e
         })
         .join('\n')
-    )
+    })
     .slice(1, -1)
     .join('\n\n')
     .replace(/[0-9]*\./g, '')
@@ -143,8 +223,4 @@ const parseDayCafeteria = ({ children }: CheerioElement) => {
     .replace(/[0-9]*\./g, '')
 }
 
-const KoDayType = index => {
-  // return isNumber(index)
-  return dateTypes.DayOfWeek[index % 7]
-  // : dateTypes.DayOfWeek[Number(index) % 7]
-}
+const KoDayType = index => dateTypes.DayOfWeek[index % 7]

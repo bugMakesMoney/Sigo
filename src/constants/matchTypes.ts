@@ -78,6 +78,7 @@ export const TYPE = {
   NEXT: 'next',
   THIS: 'this',
   DAYKO: 'dayko',
+  ALL: 'all',
   ERROR: 'error',
   OVERLAP: 'overlap',
 }

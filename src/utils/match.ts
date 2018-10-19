@@ -70,11 +70,8 @@ const matchCafeteria = (text: string): MatchCafeteriaModel => {
   return { module: MODULE.CAFETERIA, options: { type, value } }
 }
 const matchSchedule = (text: string): MatchCafeteriaModel => {
-  const [
-    {
-      item: { title: type = 'this' },
-    },
-  ] = matchText(scheduleMatch, options, text || 'this')
+  const { item: { title: type = 'this' } = {} } =
+    matchText(scheduleMatch, options, text)[0] || ({} as MatchResultModel)
   let value
   if (type === TYPE.TARGET) {
     text = text.replace(/[^0-9]/g, '')
@@ -109,7 +106,8 @@ const matchText = (matchList, options, text): MatchResultModel[] => {
 export const matchModule = (text: string) => {
   text = text.replace(/ /gi, '')
   const modules = matchText(matchType, options, text).filter(
-    ({ matches: { length }, score }) => length > 0 && score !== 0.001
+    ({ matches: { length }, score }) =>
+      length > 0 && (score !== 0.01 && score !== 0.001)
   )
   if (modules.length) {
     const isOverlap =
