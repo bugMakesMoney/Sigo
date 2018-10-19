@@ -1,11 +1,10 @@
 import * as Express from 'express'
-import { fbMessenger, EventTypes } from '../lib'
+import { fbMessenger, EventTypes, Message } from '../lib'
 import Cafeteria from './modules/cafeteria'
 import Schedule from './modules/schedule'
 import { matchModule } from './utils/match'
 import { MODULE, TYPE } from './constants/matchTypes'
 import { sendCafeteria, sendOverlap, sendSchedule } from './bot'
-import { ReportModel } from './model/reportModel'
 
 const express = Express()
 
@@ -28,7 +27,7 @@ express.use(app.setWebhook('/webhook'))
 const cafeteria: Cafeteria = new Cafeteria()
 const schedule: Schedule = new Schedule()
 
-app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
+app.subscribe(EventTypes.MESSAGE, async (userId, message: Message) => {
   const firstTime = new Date().getTime()
   try {
     await app.sendTypingOn(userId)
@@ -57,7 +56,14 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
       console.log('is reply', message.getPayload())
     }
     if (message.isAttachments()) {
-      console.log('attachments', message.getAttachments(0))
+      const attachments = message.getAttachments()
+
+      attachments.map(async attachment => {
+        const {
+          payload: { url },
+        } = attachment
+        await app.sendImageUrl(userId, url)
+      })
     }
   } catch (e) {
     console.log('subscribe error', e)

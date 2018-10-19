@@ -15,11 +15,10 @@ export const sendCafeteria = cafeteria => {
     if (type === TYPE.THIS) return `이번 주 급식입니다\n\n${data}`
     if (type === TYPE.NEXT) return `다음 주 급식입니다\n\n${data}`
     if (type === TYPE.ERROR) return `올바른 날짜를 입력해주세요`
-    else {
-      return 'aa'
-    }
+    return ''
   } catch (e) {
-    return 'aa'
+    console.log(e)
+    return false
   }
 }
 

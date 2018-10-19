@@ -25,5 +25,10 @@ export default class client {
     private requestPost;
     protected sendMessage: (recipientId: any, message: any) => any;
     protected sendAction: (recipientId: any, action: any) => any;
+    protected sendAttachment: (recipientId: any, { type, payload_url, reusable }: {
+        type: any;
+        payload_url: any;
+        reusable: any;
+    }) => any;
     private sendRequest;
 }

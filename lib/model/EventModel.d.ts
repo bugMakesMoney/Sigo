@@ -18,9 +18,12 @@ export interface ReplyModel {
     };
 }
 export interface AttachmentsModel {
-    attachment: {
-        type: string;
-        payload: object;
+    attachments: AttachmentsInfoModel[];
+}
+export interface AttachmentsInfoModel {
+    type: string;
+    payload: {
+        url: any;
     };
 }
 export interface MessageModel<T> extends EventModel {
