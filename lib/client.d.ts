@@ -24,5 +24,6 @@ export default class client {
     private requestGet;
     private requestPost;
     protected sendMessage: (recipientId: any, message: any) => any;
+    protected sendAction: (recipientId: any, action: any) => any;
     private sendRequest;
 }

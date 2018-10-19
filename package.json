@@ -10,8 +10,8 @@
     "start": "node build/index.js",
     "build": "tsc",
     "postinstall": "concurrently \"rm -rf build \" \"tsc\"  \"mkdir -p build/lib\" \"cp -r lib build/lib\"",
-    "tsc--watch": "tsc -w",
-    "test--watch": "nodemon --watch build/ --watch src/ build/index.js"
+    "tsc": "tsc -w",
+    "test": "nodemon --watch build/ --watch src/ build/index.js"
   },
   "engines": {
     "node": "10.6.0"

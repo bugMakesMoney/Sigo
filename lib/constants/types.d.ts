@@ -10,4 +10,8 @@ export declare const EventTypes: {
     CHECKOUT_UPDATE: string;
     ACCOUNT_LINKING: string;
 };
+export declare const ActionTypes: {
+    TYPING_ON: string;
+    TYPING_OFF: string;
+};
 export declare const MessageTypes: string[];

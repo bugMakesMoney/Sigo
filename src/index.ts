@@ -5,21 +5,18 @@ import Schedule from './modules/schedule'
 import { matchModule } from './utils/match'
 import { MODULE, TYPE } from './constants/matchTypes'
 import { sendCafeteria, sendOverlap, sendSchedule } from './bot'
+import { ReportModel } from './model/reportModel'
+
 const express = Express()
 
 const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
 
-// const config = {
-//   appSecret: APP_SECRET,
-//   accessToken: ACCESS_TOKEN,
-//   verifyToken: VERIFY_TOKEN,
-// }
 const config = {
-  appSecret: '3c7a370c9d826d3206d1c1559e97e83e',
-  accessToken:
-    'EAADXqsSmDEYBAPZCgUFSZASs5maoTbhi8O20xnRCS3iJaaQl1p7JHE1DJ5RIfO20UZAGzwi6sqisri0vTAtzKbAtjVJYWAVYZAPvaZC6gYq0qgMSrqkntYgsLAjLbQwcEHQUkJwVZC8puwOUWftQD32hbVI4FRa0tBnqqbH9Lo9gMGkR5suBvc',
-  verifyToken: 'sigo',
+  appSecret: APP_SECRET,
+  accessToken: ACCESS_TOKEN,
+  verifyToken: VERIFY_TOKEN,
 }
+
 const port = process.env.PORT || 8000
 
 const server = require('http').Server(express)
@@ -30,10 +27,11 @@ express.use(app.setWebhook('/webhook'))
 
 const cafeteria: Cafeteria = new Cafeteria()
 const schedule: Schedule = new Schedule()
-// schedule.getSchedule({ type: 'target', value: 10 })
+
 app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
   const firstTime = new Date().getTime()
   try {
+    await app.sendTypingOn(userId)
     if (message.isText()) {
       const { module, options } = matchModule(message.getText())
       if (module === MODULE.CAFETERIA) {
@@ -55,11 +53,18 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message) => {
         return await app.sendTextMessage(userId, sendOverlap(options))
       }
     }
+    if (message.isReply()) {
+      console.log('is reply', message.getPayload())
+    }
+    if (message.isAttachments()) {
+      console.log('attachments', message.getAttachments(0))
+    }
   } catch (e) {
-    console.log(e)
+    console.log('subscribe error', e)
   } finally {
     const lastTime = new Date().getTime()
     console.log('log time : ', lastTime - firstTime)
+    return await app.sendTypingOff(userId)
   }
 })
 
