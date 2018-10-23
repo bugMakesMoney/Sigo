@@ -9,11 +9,3 @@ export interface CafeteriaModel {
   data: string
   type: string
 }
-
-export interface MatchCafeteriaModel {
-  module: string
-  options: {
-    type: string
-    value: number | string
-  }
-}

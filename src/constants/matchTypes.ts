@@ -13,6 +13,10 @@ export const matchType = [
     title: 'weather',
     values: ['날씨'],
   },
+  {
+    title: 'report',
+    values: ['제보', '제보하기'],
+  },
 ]
 const DayOfWeek = dateTypes.DayOfWeek.slice(1, -1)
 export const cafeteriaMatch = [
@@ -68,6 +72,7 @@ export const scheduleMatch = [
 export const MODULE = {
   CAFETERIA: 'cafeteria',
   SCHEDULE: 'schedule',
+  REPORT: 'report',
   ECHO: 'echo',
 }
 

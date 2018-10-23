@@ -7,8 +7,7 @@ import {
   scheduleMatch,
   dayOfWeekMatch,
 } from '../constants/matchTypes'
-import { MatchResultModel } from '../model/matchModel'
-import { MatchCafeteriaModel } from '../model/cafeteriaModel'
+import { TextMatchModel, MatchResultModel } from '../model/matchModel'
 
 const options = {
   keys: ['values'],
@@ -17,9 +16,9 @@ const options = {
   includeScore: true,
 }
 
-const matchCafeteria = (text: string): MatchCafeteriaModel => {
+const matchCafeteria = (text: string): MatchResultModel => {
   const { item: { title: type = 'today' } = {} } =
-    matchText(cafeteriaMatch, options, text)[0] || ({} as MatchResultModel)
+    matchText(cafeteriaMatch, options, text)[0] || ({} as TextMatchModel)
   let value
   if (type === TYPE.TARGET) {
     text = text.replace(/[^0-9]/g, '')
@@ -69,9 +68,9 @@ const matchCafeteria = (text: string): MatchCafeteriaModel => {
   }
   return { module: MODULE.CAFETERIA, options: { type, value } }
 }
-const matchSchedule = (text: string): MatchCafeteriaModel => {
+const matchSchedule = (text: string): MatchResultModel => {
   const { item: { title: type = 'this' } = {} } =
-    matchText(scheduleMatch, options, text)[0] || ({} as MatchResultModel)
+    matchText(scheduleMatch, options, text)[0] || ({} as TextMatchModel)
   let value
   if (type === TYPE.TARGET) {
     text = text.replace(/[^0-9]/g, '')
@@ -99,11 +98,11 @@ const matchSchedule = (text: string): MatchCafeteriaModel => {
   return { module: MODULE.SCHEDULE, options: { type, value } }
 }
 
-const matchText = (matchList, options, text): MatchResultModel[] => {
+const matchText = (matchList, options, text): TextMatchModel[] => {
   return new Fuse(matchList, options).search(text)
 }
 
-export const matchModule = (text: string) => {
+export const matchModule = (text: string): MatchResultModel => {
   text = text.replace(/ /gi, '')
   const modules = matchText(matchType, options, text).filter(
     ({ matches: { length }, score }) =>
@@ -122,18 +121,22 @@ export const matchModule = (text: string) => {
       return matchPriority(priority, text)
     }
   }
-  return { module: MODULE.ECHO, options: { type: 'today', value: 5 } }
+  return { module: MODULE.ECHO }
 }
 
-const matchPriority = (module: MatchResultModel, text: string) => {
+const matchPriority = (
+  module: TextMatchModel,
+  text: string
+): MatchResultModel => {
   const {
     item: { title },
   } = module
   if (title === 'cafeteria') return matchCafeteria(text)
   if (title === 'schedule') return matchSchedule(text)
+  if (title === 'report') return { module: MODULE.REPORT }
 }
 
-const matchOverlap = (modules: MatchResultModel[]) => {
+const matchOverlap = (modules: TextMatchModel[]): MatchResultModel => {
   return {
     module: modules.map(({ item: { title } }) => title),
     options: {

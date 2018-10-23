@@ -1,0 +1,4 @@
+export const PayloadTypes = {
+  REPLY_REPORT_YES: 'REPORT_REPORT_YES',
+  REPLY_REPORT_NO: 'REPORT_REPORT_NO',
+}

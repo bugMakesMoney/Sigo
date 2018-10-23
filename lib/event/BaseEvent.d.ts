@@ -1,5 +1,5 @@
-import { TextModel, AttachmentsModel, ReplyModel, EventModel, MessageModel, ReadModel, DeliveryModel, EchoModel } from '../model/EventModel';
-declare type defaultEventModel = MessageModel<TextModel> | MessageModel<ReplyModel> | MessageModel<AttachmentsModel> | DeliveryModel | ReadModel | EchoModel;
+import { EventModel } from '../model/EventModel';
+import { defaultEventModel } from './Types';
 export default class Event<T = defaultEventModel> {
     id: string;
     time: string;
@@ -13,4 +13,3 @@ export default class Event<T = defaultEventModel> {
     setEventType(eventType: any): void;
     getEventType(): string;
 }
-export {};

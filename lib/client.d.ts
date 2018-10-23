@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import * as Http from 'http';
-import { AppConfigModel } from './model';
+import { AppConfigModel, ReplyMessageModel } from './model';
 export default class client {
     server: Http.Server;
     endpoint: string;
@@ -30,5 +30,6 @@ export default class client {
         payload_url: any;
         reusable: any;
     }) => any;
+    protected sendQuickReply: (recipientId: any, { text, quick_replies }: ReplyMessageModel) => any;
     private sendRequest;
 }

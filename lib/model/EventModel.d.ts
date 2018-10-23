@@ -17,6 +17,12 @@ export interface ReplyModel {
         payload: string;
     };
 }
+export interface ReplyInfoModel {
+    content_type: string;
+    title: string;
+    payload: string;
+    imageUrl?: string;
+}
 export interface AttachmentsModel {
     attachments: AttachmentsInfoModel[];
 }

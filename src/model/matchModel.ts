@@ -11,6 +11,14 @@ export interface MatchValueModel {
 }
 
 export interface MatchResultModel {
+  module: string | string[]
+  options?: {
+    type: string
+    value: number | string | number[] | string[]
+  }
+}
+
+export interface TextMatchModel {
   item: {
     title: string
     values: []
