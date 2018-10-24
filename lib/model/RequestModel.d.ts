@@ -18,4 +18,9 @@ interface requestFailModel {
     error_subcode: number;
     fbtrace_id: string;
 }
+export interface UserProfileModel {
+    name: string;
+    profile_pic: string;
+    gender: string;
+}
 export {};

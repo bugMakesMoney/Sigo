@@ -43,7 +43,9 @@ export default class cafeteria extends base {
       this.data = data('tbody')
       console.log('load cafeteria data')
     } catch (err) {
-      console.log('load cafeteria err', err)
+      console.error('load cafeteria err', err)
+      console.info('retry load cafeteria')
+      this.loadCafeteria()
     }
   }
   public getCafeteria = (options?) => {

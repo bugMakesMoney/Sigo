@@ -10,7 +10,7 @@ export declare class ReplyMessage extends Message {
     addPhoneNumber(): ReplyOptionsModel[];
     addUserEmail(): ReplyOptionsModel[];
     getOptions(): ReplyOptionsModel[];
-    makeMessage(): {
+    buildReply(): {
         text: string;
         quick_replies: ReplyOptionsModel[];
     };

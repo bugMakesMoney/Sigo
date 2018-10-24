@@ -41,7 +41,9 @@ export default class schedule extends base {
       this.data = data('tbody')
       console.log('load schedule data')
     } catch (err) {
-      console.log('load schedule error', err)
+      console.error('load schedule error', err)
+      console.info('retry load schgedule')
+      this.loadSchedule()
     }
   }
 

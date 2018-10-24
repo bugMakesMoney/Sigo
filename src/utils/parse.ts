@@ -46,7 +46,7 @@ const commonParseSchedule = data => {
       )
       .join('\n\n')
   } catch (err) {
-    console.log(err)
+    console.error(err)
     return '일정이 없습니다'
   }
 }
