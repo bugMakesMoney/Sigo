@@ -2,6 +2,7 @@ import * as Express from 'express'
 import { fbMessenger, EventTypes, MessageType, ReplyMessage } from '../lib'
 import Cafeteria from './modules/cafeteria'
 import Schedule from './modules/schedule'
+import Report from './modules/report'
 import { matchModule } from './utils/match'
 import { sendCafeteria, sendOverlap, sendSchedule } from './bot'
 import {
@@ -20,10 +21,20 @@ const express = Express()
 
 const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
 
+// const config = {
+//   appSecret: APP_SECRET,
+//   accessToken: ACCESS_TOKEN,
+//   verifyToken: VERIFY_TOKEN,
+// }
+
 const config = {
-  appSecret: APP_SECRET,
-  accessToken: ACCESS_TOKEN,
-  verifyToken: VERIFY_TOKEN,
+  appSecret: '3c7a370c9d826d3206d1c1559e97e83e',
+  accessToken:
+    'EAADXqsSmDEYBAPZCgUFSZASs5maoTbhi8O20xnRCS3iJaaQl1p7JHE1DJ5RIfO20UZAGzwi6sqisri0vTAtzKbAtjVJYWAVYZAPvaZC6gYq0qgMSrqkntYgsLAjLbQwcEHQUkJwVZC8puwOUWftQD32hbVI4FRa0tBnqqbH9Lo9gMGkR5suBvc',
+  verifyToken: 'sigo',
+  pageToken:
+    'EAADXqsSmDEYBAK1hLBUOavg9bFMT785xfIvZB7ejjmbtUJrcWiFfdXiyiKa02z2NbIlWofGboLWDChiUHZB6SXNZBfRk1qZA7kbyrZCidYqeu6ryibYTFw4LZCCi1NZBF7AZAv6ED3ZBdxiy6ExejSRVj9Hlt37oXkgWvd1IZATnDTzUtace6rB7Tv',
+  pageId: '325920784549338',
 }
 
 const port = process.env.PORT || 8000
@@ -43,13 +54,25 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
   const firstTime = new Date().getTime()
   try {
     await app.sendTypingOn(userId)
-
     if (message.isReply()) {
       const payload = message.getPayload()
       if (payload === PayloadTypes.REPLY_REPORT_YES) {
         await app.sendTextMessage(userId, Constants.REPORT_CONFIRM_YES)
         const { reportText, isAnonymous } = await hgetAllAsync(userId)
+        const { name: userName } = await app.getUserProfile(userId)
         const pictures = await lrangeAsync(userId + 'pic', 0, -1)
+        const { pageToken, version, endpoint } = app.getAppInfo()
+        const report = new Report({
+          userId,
+          userName,
+          isAnonymous,
+          reportText,
+          pictures,
+          pageToken,
+          version,
+          endpoint,
+        })
+        report.postReport(reportText)
         await app.sendTextMessage(
           userId,
           `제보 테스트 ${reportText}\n${isAnonymous}\n${pictures}`
@@ -59,14 +82,14 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
         // await UserModel.addReportCount({ userId })
       }
       if (payload === PayloadTypes.REPLY_REPORT_NO) {
+        await client.del([userId, userId + 'pic'])
         await app.sendTextMessage(userId, Constants.REPORT_CONFIRM_NO)
       }
       if (payload === PayloadTypes.REPLY_PICTURES_YES) {
-        await hsetAsync(userId, 'isPictures', true)
+        await hsetAsync(userId, 'step', Constants.STEP_PICTURES)
         await app.sendTextMessage(userId, Constants.PLZ_SEND_PICTURES)
       }
       if (payload === PayloadTypes.REPLY_PICTURES_NO) {
-        await hsetAsync(userId, 'isPictures', false)
         const replyIsAnonymous = new ReplyMessage(Constants.REPLY_ISANONYMOUS)
         replyIsAnonymous.addText('예', PayloadTypes.REPLY_ANONYMOUS_YES)
         replyIsAnonymous.addText('아니요', PayloadTypes.REPLY_ANONYMOUS_NO)
@@ -93,17 +116,21 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
     if (isReport) {
       const step = await hgetAsync(userId, 'step')
       try {
-        if (step === 'reportText') {
+        if (step === Constants.STEP_DONE) {
+          await app.sendTextMessage(userId, Constants.REPORT_CANCEL)
+          return await client.del([userId, userId + 'pic'])
+        }
+        if (step === Constants.STEP_REPORT_TEXT) {
           const text = message.getText()
           await hsetAsync(userId, 'reportText', text)
           const replyIsPictures = new ReplyMessage(Constants.REPLY_ISPICTURES)
           replyIsPictures.addText('예', PayloadTypes.REPLY_PICTURES_YES)
           replyIsPictures.addText('아니요', PayloadTypes.REPLY_PICTURES_NO)
+          await hsetAsync(userId, 'step', Constants.STEP_DONE)
           await app.sendReply(userId, replyIsPictures.buildReply())
-          await hsetAsync(userId, 'step', 'pictures')
           return await MessageModel.saveMessage({ userId, text })
         }
-        if (step === 'pictures') {
+        if (step === Constants.STEP_PICTURES) {
           const attachments = message.getAttachments()
           attachments.forEach(async attachment => {
             const {
@@ -116,11 +143,9 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
           const replyIsAnonymous = new ReplyMessage(Constants.REPLY_ISANONYMOUS)
           replyIsAnonymous.addText('예', PayloadTypes.REPLY_ANONYMOUS_YES)
           replyIsAnonymous.addText('아니요', PayloadTypes.REPLY_ANONYMOUS_NO)
-          await hsetAsync(userId, 'step', 'anonymous')
+          await hsetAsync(userId, 'step', Constants.STEP_DONE)
           return await app.sendReply(userId, replyIsAnonymous.buildReply())
         }
-        await app.sendTextMessage(userId, Constants.REPORT_CANCEL)
-        return await client.del([userId, userId + 'pic'])
       } catch {
         await app.sendTextMessage(userId, Constants.REPORT_CANCEL)
         return await client.del([userId, userId + 'pic'])

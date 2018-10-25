@@ -8,4 +8,7 @@ export const Constants = {
   REPLY_ISANONYMOUS: '익명으로 제보할까요?',
   REPLY_REPORT_CONFIRM: '정말 제보할까요?',
   REPORT_CANCEL: '제보를 취소합니다',
+  STEP_REPORT_TEXT: 'reportText',
+  STEP_PICTURES: 'pictures',
+  STEP_DONE: 'done',
 }
