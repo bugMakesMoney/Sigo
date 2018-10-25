@@ -1,5 +1,10 @@
-export interface ReportModel {
+export interface ReportItemModel {
   userId: string
-  step: string
-  anoymous: boolean
+  userName: string
+  isAnonymous: boolean
+  reportText: string
+  pictures?: string[]
+  pageToken: string
+  version: string
+  endpoint: string
 }

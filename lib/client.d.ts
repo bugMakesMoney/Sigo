@@ -3,8 +3,8 @@ import * as Http from 'http';
 import { AppConfigModel, ReplyMessageModel } from './model';
 export default class client {
     server: Http.Server;
-    endpoint: string;
-    version: string;
+    private endpoint;
+    private version;
     private verifyToken;
     private webhookUrl;
     private appSecret;
@@ -12,6 +12,15 @@ export default class client {
     private pageId?;
     private pageToken?;
     constructor(config: AppConfigModel, server?: Http.Server);
+    protected appInfo(): {
+        endpoint: string;
+        version: string;
+        verifyToken: string;
+        appSecret: string;
+        accessToken: string;
+        pageId: string;
+        pageToken: string;
+    };
     subscribe: (eventType: string, listener: (userId: any, message: any) => Promise<void>) => Http.Server;
     private setClientConfig;
     setWebhook: (webhookUrl: string) => any;
