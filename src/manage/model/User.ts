@@ -6,6 +6,7 @@ interface IUser extends Document {
   profile_pic: string
   gender: string
   reportCount: 0
+  lastReportDate: Date
 }
 
 const UserSchema = new Schema({
@@ -16,6 +17,10 @@ const UserSchema = new Schema({
   reportCount: {
     type: Number,
     default: 0,
+  },
+  lastReportDate: {
+    type: Date,
+    default: new Date(),
   },
 })
 
@@ -65,17 +70,39 @@ export default class User {
     )
   }
 
-  static addReportCount = async ({ userId }) => {
+  static addReportCount = async userId => {
     return await UserModel.findOneAndUpdate(
       { userId },
       {
         $inc: {
-          reponrtCount: 1,
+          reportCount: 1,
+        },
+        $set: {
+          lastReportDate: new Date(),
         },
       },
       {
         new: true,
       }
     )
+  }
+
+  static resetReportCount = async userId => {
+    return await UserModel.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          reportCount: 0,
+        },
+      },
+      {
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    )
+  }
+
+  static removeAllUsers = async () => {
+    return await UserModel.deleteMany({})
   }
 }

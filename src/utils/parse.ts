@@ -2,7 +2,7 @@ import * as request from 'request-promise'
 import * as cheerio from 'cheerio'
 
 import dateTypes from '../constants/dateTypes'
-import { CafeteriaModel } from '../model/cafeteriaModel'
+import { CafeteriaModel } from '../model'
 import { TYPE } from '../constants/matchTypes'
 import { scheduleUrl } from '../constants/url'
 

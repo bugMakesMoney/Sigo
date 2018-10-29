@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio'
 import * as request from 'request-promise'
 
 import base from './base'
-import { DateModel, CafeteriaModel } from '../model/cafeteriaModel'
+import { DateModel } from '../model'
 import { parseCafeteria } from '../utils/parse'
 import { cafeteriaUrl } from '../constants/url'
 import { TYPE } from '../constants/matchTypes'

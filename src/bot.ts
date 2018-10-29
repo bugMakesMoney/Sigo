@@ -1,6 +1,6 @@
 import { TYPE } from './constants/matchTypes'
 
-export const sendCafeteria = cafeteria => {
+const sendCafeteria = cafeteria => {
   try {
     const { type, data } = cafeteria
     console.log('send cafeteria')
@@ -20,7 +20,7 @@ export const sendCafeteria = cafeteria => {
   }
 }
 
-export const sendSchedule = schedule => {
+const sendSchedule = schedule => {
   try {
     const { type, data } = schedule
     console.log('send schedule')
@@ -35,4 +35,10 @@ export const sendSchedule = schedule => {
   }
 }
 
-export const sendOverlap = options => `${options.value.join('? ')}?`
+const sendOverlap = options => `${options.value.join('? ')}?`
+
+export default {
+  sendCafeteria,
+  sendSchedule,
+  sendOverlap,
+}

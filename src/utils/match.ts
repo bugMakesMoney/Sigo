@@ -7,7 +7,7 @@ import {
   scheduleMatch,
   dayOfWeekMatch,
 } from '../constants/matchTypes'
-import { TextMatchModel, MatchResultModel } from '../model/matchModel'
+import { TextMatchModel, MatchResultModel } from '../model'
 
 const options = {
   keys: ['values'],
