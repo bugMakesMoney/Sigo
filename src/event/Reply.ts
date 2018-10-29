@@ -57,6 +57,14 @@ export default class eventReply {
 
   private replyAnonymousYes = async () => {
     const { app, userId } = this
+    const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
+    await app.sendTextMessage(
+      userId,
+      `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
+        Boolean(isAnonymous) ? 'O' : 'X'
+      }\n내용 : ${reportText}`
+    )
+
     const replyIsConfirm = new ReplyMessage(Constants.REPLY_REPORT_CONFIRM)
     replyIsConfirm.addText('예', PayloadTypes.REPLY_REPORT_YES)
     replyIsConfirm.addText('아니요', PayloadTypes.REPLY_REPORT_NO)
@@ -67,6 +75,14 @@ export default class eventReply {
 
   private replyAnonymosNo = async () => {
     const { app, userId } = this
+    const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
+    await app.sendTextMessage(
+      userId,
+      `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
+        Boolean(isAnonymous) ? 'O' : 'X'
+      }\n내용 : ${reportText}`
+    )
+
     const replyIsConfirm = new ReplyMessage(Constants.REPLY_REPORT_CONFIRM)
     replyIsConfirm.addText('예', PayloadTypes.REPLY_REPORT_YES)
     replyIsConfirm.addText('아니요', PayloadTypes.REPLY_REPORT_NO)
@@ -78,7 +94,7 @@ export default class eventReply {
   private replyReportYes = async () => {
     const { app, userId } = this
     const { name: userName } = await app.getUserProfile(userId)
-    const { pageToken, version, endpoint } = app.getAppInfo()
+    const { accessToken, version, endpoint } = app.getAppInfo()
     const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
     const pictures = await db.lrangeAsync(userId + 'pic', 0, -1)
     const report = new Report({
@@ -87,19 +103,13 @@ export default class eventReply {
       isAnonymous,
       reportText,
       pictures,
-      pageToken,
+      accessToken,
       version,
       endpoint,
     })
     const { result, id } = await report.postReport(reportText)
     if (result) {
       await app.sendTextMessage(userId, Constants.SEND_REPORT_SUCCESS)
-      await app.sendTextMessage(
-        userId,
-        `익명 여부 : ${
-          Boolean(isAnonymous) ? '예' : '아니요'
-        }\n제보 글 : ${reportText}\n${pictures}`
-      )
       await app.sendTextMessage(
         userId,
         `작성한 게시글로 이동하기 : https://www.facebook.com/${id}`
@@ -120,6 +130,6 @@ export default class eventReply {
   private replyReportNo = async () => {
     const { app, userId } = this
     await db.delAsync([userId, userId + 'pic'])
-    await app.sendTextMessage(userId, Constants.SEND_REPORT_NO)
+    await app.sendTextMessage(userId, Constants.SEND_REPORT_CANCEL)
   }
 }

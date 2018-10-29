@@ -27,7 +27,7 @@ export default class eventReport {
     const isText = message.isText()
     if (isText) {
       const text = message.getText()
-      if (step === CANCEL) return await this.cancel()
+      if (text === CANCEL) return await this.cancel()
       if (step === STEP_REPORT_TEXT) return await this.stepReportText(text)
       if (step === STEP_PICTURES) return await this.stepTextPictures(text)
       if (step === STEP_ANONYMOUS) return await this.stepAnnonymous(text)
@@ -117,8 +117,16 @@ export default class eventReport {
       NO,
     } = Constants
     const { REPLY_REPORT_YES, REPLY_REPORT_NO } = PayloadTypes
+    const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
 
     if (text === YES) {
+      await app.sendTextMessage(
+        userId,
+        `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
+          Boolean(isAnonymous) ? 'O' : 'X'
+        }\n내용 : ${reportText}`
+      )
+
       const replyIsConfirm = new ReplyMessage(REPLY_REPORT_CONFIRM)
       replyIsConfirm.addText('예', REPLY_REPORT_YES)
       replyIsConfirm.addText('아니요', REPLY_REPORT_NO)
@@ -129,6 +137,13 @@ export default class eventReport {
     }
 
     if (text === NO) {
+      await app.sendTextMessage(
+        userId,
+        `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
+          Boolean(isAnonymous) ? 'O' : 'X'
+        }\n내용 : ${reportText}`
+      )
+
       const replyIsConfirm = new ReplyMessage(REPLY_REPORT_CONFIRM)
       replyIsConfirm.addText('예', REPLY_REPORT_YES)
       replyIsConfirm.addText('아니요', REPLY_REPORT_NO)
@@ -152,10 +167,10 @@ export default class eventReport {
 
   private stepConfirm = async text => {
     const { app, userId } = this
-    const { SEND_REPORT_NO, YES, NO, PLZ_SEND_CORRECT } = Constants
+    const { SEND_REPORT_CANCEL, YES, NO, PLZ_SEND_CORRECT } = Constants
     if (text === YES) {
       const { name: userName } = await app.getUserProfile(userId)
-      const { pageToken, version, endpoint } = app.getAppInfo()
+      const { accessToken, version, endpoint } = app.getAppInfo()
       const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
       const pictures = await db.lrangeAsync(userId + 'pic', 0, -1)
       const report = new Report({
@@ -164,19 +179,13 @@ export default class eventReport {
         isAnonymous,
         reportText,
         pictures,
-        pageToken,
+        accessToken,
         version,
         endpoint,
       })
       const { result, id } = await report.postReport(reportText)
       if (result) {
         await app.sendTextMessage(userId, Constants.SEND_REPORT_SUCCESS)
-        await app.sendTextMessage(
-          userId,
-          `익명 여부 : ${
-            Boolean(isAnonymous) ? '예' : '아니요'
-          }\n제보 글 : ${reportText}\n${pictures}`
-        )
         await app.sendTextMessage(
           userId,
           `작성한 게시글로 이동하기 : https://www.facebook.com/${id}`
@@ -195,7 +204,7 @@ export default class eventReport {
     }
 
     if (text === NO) {
-      await app.sendTextMessage(userId, SEND_REPORT_NO)
+      await app.sendTextMessage(userId, SEND_REPORT_CANCEL)
       await db.delAsync([userId, userId + 'pic'])
     }
 

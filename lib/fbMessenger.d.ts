@@ -13,7 +13,5 @@ export declare class fbMessenger extends client {
         verifyToken: string;
         appSecret: string;
         accessToken: string;
-        pageId: string;
-        pageToken: string;
     };
 }

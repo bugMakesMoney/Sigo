@@ -9,8 +9,6 @@ export default class client {
     private webhookUrl;
     private appSecret;
     private accessToken;
-    private pageId?;
-    private pageToken?;
     constructor(config: AppConfigModel, server?: Http.Server);
     protected appInfo(): {
         endpoint: string;
@@ -18,8 +16,6 @@ export default class client {
         verifyToken: string;
         appSecret: string;
         accessToken: string;
-        pageId: string;
-        pageToken: string;
     };
     subscribe: (eventType: string, listener: (userId: any, message: any) => Promise<void>) => Http.Server;
     private setClientConfig;

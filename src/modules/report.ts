@@ -8,7 +8,7 @@ export default class report {
   isAnonymous: boolean
   reportText: string
   pictures?: string[]
-  pageToken: string
+  accessToken: string
   version: string
   endpoint: string
   constructor(reportInfo: ReportItemModel) {
@@ -21,14 +21,14 @@ export default class report {
     const {
       endpoint,
       version,
-      pageToken: access_token,
+      accessToken: access_token,
       isAnonymous,
       userName,
     } = this
     const url = `${endpoint}/${version}/me/feed`
     const reportsCount = await ReportModel.getReportsCount()
-    const message = `#${reportsCount}번째 제보\n
-    ${isAnonymous ? '익명 제보' : userName + '님'}\n
+    const message = `#${reportsCount + 1}번째 제보입니다\n
+    ${isAnonymous ? '익명의 제보' : userName + '님의 제보'}\n
     ${reportText}`
 
     let options = {
@@ -73,7 +73,7 @@ export default class report {
   }
 
   postPrivateImage = async imageUrl => {
-    const { endpoint, version, pageToken: access_token } = this
+    const { endpoint, version, accessToken: access_token } = this
     const url = `${endpoint}/${version}/me/photos`
     const options = {
       method: 'POST',

@@ -3,9 +3,15 @@ import { matchModule } from './utils/match'
 import db from './manage/db'
 import { Constants } from './constants'
 import Initialize from './modules'
-import { MessageType } from './types'
+import { MessageType, PostbackType } from './types'
 import { MessageModel, UserModel } from './manage/model'
-import { EventReply, EventReport, EventText, EventAttachments } from './event'
+import {
+  EventReply,
+  EventReport,
+  EventText,
+  EventAttachments,
+  EventPostback,
+} from './event'
 
 const initialize = new Initialize()
 const { app, cafeteria, schedule } = initialize.init('/webhook')
@@ -46,7 +52,8 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
       await app.sendTextMessage(userId, SEND_REPORT_CANCEL)
       await db.delAsync([userId, userId + 'pic'])
     }
-    console.error('subscribe error', e)
+    console.error('subscribe message error', e.message)
+    app.sendTextMessage(userId, Constants.ERROR)
   } finally {
     const { name: userName, profile_pic, gender } = await app.getUserProfile(
       userId
@@ -54,9 +61,34 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
     await UserModel.saveUser({ userId, userName, profile_pic, gender })
 
     const lastTime = new Date().getTime()
-    console.info('log time : ', lastTime - firstTime)
+    console.info('subscribe message time : ', lastTime - firstTime)
     return await app.sendTypingOff(userId)
   }
 })
 
-initialize.listen(8000)
+app.subscribe(
+  EventTypes.POSTBACK,
+  async (userId: string, postback: PostbackType) => {
+    const firstTime = new Date().getTime()
+    try {
+      const payload = postback.getPostbackPayload()
+      const eventPostback = new EventPostback(payload)
+      await eventPostback.on(app, userId)
+    } catch (e) {
+      console.log('subscribe postback error', e.message)
+      app.sendTextMessage(userId, Constants.ERROR)
+    } finally {
+      const { name: userName, profile_pic, gender } = await app.getUserProfile(
+        userId
+      )
+      await UserModel.saveUser({ userId, userName, profile_pic, gender })
+
+      const lastTime = new Date().getTime()
+      console.info('subscribe postback time : ', lastTime - firstTime)
+      return await app.sendTypingOff(userId)
+    }
+  }
+)
+
+const port = process.env.PORT
+initialize.listen(port)

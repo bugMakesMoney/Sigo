@@ -3,15 +3,11 @@ import dateTypes from './dateTypes'
 export const matchType = [
   {
     title: 'cafeteria',
-    values: ['급식', '밥', '점심', 'rmqtlr'],
+    values: ['급식', '밥', '점심'],
   },
   {
     title: 'schedule',
-    values: ['일정', '스케줄', 'wjatla'],
-  },
-  {
-    title: 'weather',
-    values: ['날씨'],
+    values: ['일정', '스케줄'],
   },
   {
     title: 'report',

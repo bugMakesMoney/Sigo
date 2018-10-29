@@ -4,7 +4,7 @@ export interface ReportItemModel {
   isAnonymous: boolean
   reportText: string
   pictures?: string[]
-  pageToken: string
+  accessToken: string
   version: string
   endpoint: string
 }
