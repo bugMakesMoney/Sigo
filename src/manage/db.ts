@@ -28,8 +28,20 @@ mongoose.connect(
   { useNewUrlParser: true }
 )
 
-export const hgetAsync = promisify(client.hget).bind(client)
-export const hsetAsync = promisify(client.hset).bind(client)
-export const hgetAllAsync = promisify(client.hgetall).bind(client)
-export const lpushAsync = promisify(client.lpush).bind(client)
-export const lrangeAsync = promisify(client.lrange).bind(client)
+const flushAll = promisify(client.flushall).bind(client)
+const hgetAsync = promisify(client.hget).bind(client)
+const hsetAsync = promisify(client.hset).bind(client)
+const hgetAllAsync = promisify(client.hgetall).bind(client)
+const lpushAsync = promisify(client.lpush).bind(client)
+const lrangeAsync = promisify(client.lrange).bind(client)
+const delAsync = promisify(client.del).bind(client)
+
+export default {
+  hgetAllAsync,
+  hgetAsync,
+  hsetAsync,
+  lpushAsync,
+  lrangeAsync,
+  delAsync,
+  flushAll,
+}

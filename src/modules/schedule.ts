@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio'
 
 import base from './base'
 import { scheduleUrl } from '../constants/url'
-import { DateModel } from '../model/cafeteriaModel'
+import { DateModel } from '../model'
 import { TYPE } from '../constants/matchTypes'
 import { parseSchedule } from '../utils/parse'
 

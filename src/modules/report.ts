@@ -1,5 +1,6 @@
 import * as request from 'request-promise'
-import { ReportItemModel } from '../model/reportModel'
+import { ReportItemModel } from '../model'
+import { ReportModel } from '../manage/model'
 
 export default class report {
   userId: string
@@ -17,8 +18,18 @@ export default class report {
   }
 
   postReport = async reportText => {
-    const { endpoint, version, pageToken: access_token } = this
+    const {
+      endpoint,
+      version,
+      pageToken: access_token,
+      isAnonymous,
+      userName,
+    } = this
     const url = `${endpoint}/${version}/me/feed`
+    const reportsCount = await ReportModel.getReportsCount()
+    const message = `#${reportsCount}번째 제보\n
+    ${isAnonymous ? '익명 제보' : userName + '님'}\n
+    ${reportText}`
 
     let options = {
       method: 'POST',
@@ -28,7 +39,7 @@ export default class report {
       },
       json: true,
       body: {
-        message: reportText,
+        message,
       },
     }
     try {
@@ -42,16 +53,22 @@ export default class report {
           })
         )
         options = Object.assign(options, {
-          body: Object.assign({
-            message: reportText,
+          body: Object.assign(options.body, {
             attached_media: pictureIds,
           }),
         })
       }
-      const result = await request(options)
-      console.log(result)
+      const { id } = await request(options)
+
+      return {
+        result: true,
+        id,
+      }
     } catch (err) {
       console.log(err.message)
+      return {
+        result: false,
+      }
     }
   }
 

@@ -3,7 +3,7 @@ import { Document, Schema, model } from 'mongoose'
 interface IReport extends Document {
   userId: string
   isAnonymous: Boolean
-  text: string
+  reportText: string
   date: Date
   pictures?: [String]
 }
@@ -11,7 +11,7 @@ interface IReport extends Document {
 const ReportSchema = new Schema({
   userId: String,
   isAnonymous: Boolean,
-  text: String,
+  reportText: String,
   date: Date,
   pictures: [String],
 })
@@ -27,23 +27,31 @@ export default class Report {
     return await ReportModel.find({ isAnonymous }).exec()
   }
 
+  static getReportsCount = async () => {
+    return await ReportModel.find().count()
+  }
+
   static saveReport = async ({
     userId,
     isAnonymous,
-    text,
+    reportText,
     pictures,
   }: {
     userId: string
     isAnonymous: boolean
-    text: string
+    reportText: string
     pictures?: string[]
   }) => {
     return await ReportModel.create({
       userId,
       isAnonymous,
-      text,
+      reportText,
       date: new Date(),
       pictures,
     })
+  }
+
+  static removeAllReports = async () => {
+    return await ReportModel.deleteMany({})
   }
 }
