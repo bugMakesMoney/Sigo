@@ -8,7 +8,7 @@ import { MessageModel, UserModel } from './manage/model'
 import { EventReply, EventReport, EventText, EventAttachments } from './event'
 
 const initialize = new Initialize()
-const { app, cafeteria, schedule } = initialize.init()
+const { app, cafeteria, schedule } = initialize.init('/webhook')
 
 app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
   const firstTime = new Date().getTime()
