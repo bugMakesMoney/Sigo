@@ -45,7 +45,7 @@ export default class eventText {
     } = this
     await app.sendTextMessage(
       userId,
-      bot.sendCafeteria(cafeteria.getCafeteria(options))
+      bot.sendCafeteria(await cafeteria.getCafeteria(options))
     )
   }
 

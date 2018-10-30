@@ -1,10 +1,10 @@
 import * as request from 'request-promise'
 import * as cheerio from 'cheerio'
 
-import dateTypes from '../constants/dateTypes'
+import dateTypes, { checkEndDay } from '../constants/dateTypes'
 import { CafeteriaModel } from '../model'
 import { TYPE } from '../constants/matchTypes'
-import { scheduleUrl } from '../constants/url'
+import { scheduleUrl, cafeteriaUrl } from '../constants/url'
 
 const loadNewSchedule = async index => {
   const targetUrl = scheduleUrl
@@ -85,12 +85,12 @@ export const parseSchedule = async (
   }
 }
 
-export const parseCafeteria = (
+export const parseCafeteria = async (
   rmqtlr: Cheerio,
   index: number,
   type: string,
   targetIndex?: number
-): CafeteriaModel => {
+) => {
   const currentData = rmqtlr
     .find('div')
     .toArray()
@@ -99,28 +99,38 @@ export const parseCafeteria = (
     )
 
   if (type === TYPE.NEXT || type === TYPE.THIS) {
+    const month = new Date().getMonth() + 1
+    const endDay = checkEndDay(month)
+    if (type === TYPE.NEXT && endDay - 7 < index) {
+      return {
+        type,
+        data: await parseWeekCafeteria(
+          await loadNewCafeteria(month, index - endDay)
+        ),
+      }
+    }
     return {
       type,
-      data: parseWeekCafeteria(currentData),
+      data: await parseWeekCafeteria(currentData),
     }
   }
   if (type === TYPE.DAYKO) {
     return {
       type,
-      data: parseDayOfWeekCafeteria(currentData, targetIndex),
+      data: await parseDayOfWeekCafeteria(currentData, targetIndex),
     }
   }
 
   if (type === TYPE.TARGET) {
     return {
       type,
-      data: parseTargetCafeteria(currentData, index),
+      data: await parseTargetCafeteria(currentData, index),
     }
   }
 
   return {
     type,
-    data: parseDayCafeteria(currentData),
+    data: await parseDayCafeteria(currentData),
   }
 }
 
@@ -148,13 +158,13 @@ const parseTargetCafeteria = (
         .filter(({ data }) => data)
         .map(({ data }) => data)
         .filter((e, i, a) => e !== a[1])
-        .map((e, i, arr) => {
-          return i === 0
-            ? arr.length > 1
-              ? e + ` ${KoDayType(targetIndex)}요일 급식\n`
-              : e +
-                ` ${KoDayType(targetIndex)}요일 급식\n급식을 먹는날이 아닙니다`
-            : e
+        .map((e, i, { length }) => {
+          if (i !== 0) return e
+          return length > 1
+            ? `${e} ${KoDayType(targetIndex)}요일 급식\n`
+            : `${e} ${KoDayType(
+                targetIndex
+              )}요일 급식\n급식을 먹는날이 아닙니다`
         })
         .join('\n')
         .replace(/[0-9]*\./g, '')
@@ -162,31 +172,112 @@ const parseTargetCafeteria = (
     .toString()
 }
 
+const loadNewCafeteria = async (month, index) => {
+  const year = new Date().getFullYear()
+  const targetDate = `${year}${month + 1}`
+  const url = cafeteriaUrl.replace(`{targetDate}`, targetDate)
+  try {
+    const body = await request(url)
+    const data = cheerio.load(body, {
+      decodeEntities: false,
+      normalizeWhitespace: false,
+    })('tbody')
+    const newData = data
+      .find('div')
+      .toArray()
+      .find(
+        ({ firstChild }) => firstChild && firstChild.data === index.toString()
+      )
+    return newData
+  } catch {}
+}
+
+const getNextCafeteria = async (month, count) => {
+  try {
+    return parseDayOfWeekCafeteria(await loadNewCafeteria(month, 1), count)
+  } catch {}
+}
+
 const parseWeekCafeteria = ({
   parent: {
     parent: { children },
   },
 }: CheerioElement) => {
-  return children
+  const month = new Date().getMonth() + 1
+  let count = 0
+  const promises = children
     .filter(({ children }) => children)
     .map(({ firstChild: { children } }, index) => {
       return children
         .filter(({ data }) => data)
         .map(({ data }) => data)
         .filter((e, i, a) => e !== a[1])
-        .map((e, i, arr) => {
-          return i === 0
-            ? arr.length > 1
-              ? e + ` ${KoDayType(index)}요일 급식\n`
-              : e + ` ${KoDayType(index)}요일 급식\n급식을 먹는날이 아닙니다`
-            : e
+        .map((e, i, { length }) => {
+          if (i !== 0) return e
+          if (e.trim().length) {
+            count++
+            return length > 1
+              ? `${e} ${KoDayType(index)}요일 급식\n`
+              : `${e} ${KoDayType(index)}요일 급식\n급식을 먹는날이 아닙니다`
+          }
+          count++
+          return getNextCafeteria(month, count - 2)
         })
-        .join('\n')
     })
-    .slice(1, -1)
-    .join('\n\n')
-    .replace(/[0-9]*\./g, '')
+    .reduce((prev, dataArray) => {
+      if (dataArray.every(data => typeof data === 'string')) {
+        return [...prev, dataArray.join('\n')]
+      }
+      return [...prev, ...dataArray]
+    }, [])
+  return Promise.all(promises).then(data => {
+    return data
+      .slice(1, -1)
+      .join('\n\n')
+      .replace(/[0-9]*\./g, '')
+  })
 }
+
+// const parseWeekCafeteria = ({
+//   parent: {
+//     parent: { children: elWeekCafeteria },
+//   },
+// }: CheerioElement) => {
+//   const month = new Date().getMonth() + 1
+//   const endDay = checkEndDay(month)
+
+//   const promises = elWeekCafeteria
+//     .filter(({ firstChild: elDayCafeteria }) => elDayCafeteria)
+//     .map(({ firstChild: elDayCafeteria }, dayIndex) => {
+//       let dayData
+//       elDayCafeteria.children
+//         .filter(
+//           ({ data: dayRowData }, rowIndex) => dayRowData && rowIndex !== 1
+//         )
+//         .forEach(({ data: dayRowData }, rowIndex, { length }) => {
+//           const isHeader = rowIndex === 0
+//           const text = dayRowData.trim()
+//           if (isHeader) {
+//             dayData = text
+//               ? `${text} ${KoDayType(dayIndex)}요일 급식\n`
+//               : getNextCafeteria(month, dayIndex - 2)
+//             dayData += length === 1 ? '급식을 먹는날이 아닙니다' : ''
+//           }
+//           if (typeof dayData === 'string') {
+//             dayData += '\n' + dayRowData
+//           }
+//         })
+//       return dayData
+//     })
+
+//   return Promise.all(promises).then(data => {
+//     console.log(data)
+//     return data
+//       .slice(1, -1)
+//       .join('\n\n')
+//       .replace(/[0-9]*\./g, '')
+//   })
+// }
 
 const parseDayOfWeekCafeteria = (
   {
@@ -201,15 +292,13 @@ const parseDayOfWeekCafeteria = (
     .slice(1, -1)
     [targetIndex].firstChild.children.filter(({ data }) => data)
     .filter((e, i, a) => e !== a[1])
-    .map(({ data }, i, arr) => {
-      return i === 0
-        ? arr.length > 1
-          ? data + `일 ${KoDayType(targetIndex + 1)}요일 급식\n`
-          : data +
-            `일 ${KoDayType(
-              targetIndex + 1
-            )}요일 급식\n\n급식을 먹는날이 아닙니다`
-        : data
+    .map(({ data }, i, { length }) => {
+      if (i !== 0) return data
+      return length > 1
+        ? `${data}일 ${KoDayType(targetIndex + 1)}요일 급식\n`
+        : `${data}일 ${KoDayType(
+            targetIndex + 1
+          )}요일 급식\n\n급식을 먹는날이 아닙니다`
     })
     .join('\n')
     .replace(/[0-9]*\./g, '')

@@ -12,6 +12,7 @@ export { Cafeteria, Schedule, Report }
 export default class Initialize {
   private config
   private server: Http.Server
+  private app: fbMessenger
 
   constructor() {
     const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
@@ -28,13 +29,9 @@ export default class Initialize {
 
     const { config, server } = this
 
-    const app = new fbMessenger(config, server)
+    this.app = new fbMessenger(config, server)
+    const { app } = this
     express.use(app.setWebhook(webhookUrl))
-
-    const { endpoint, version, accessToken } = app.getAppInfo()
-    const threadUrl = `${endpoint}/${version}/me/thread_settings`
-    this.addGreeting(threadUrl, accessToken)
-    this.addDefaultButton(threadUrl, accessToken)
 
     db.flushAll()
 
@@ -45,7 +42,16 @@ export default class Initialize {
     }
   }
 
-  addGreeting = async (url: string, access_token: string) => {
+  addOn() {
+    const { app } = this
+    const { endpoint, version, accessToken } = app.getAppInfo()
+    const threadUrl = `${endpoint}/${version}/me/thread_settings`
+
+    this.addGreeting(threadUrl, accessToken)
+    this.addDefaultButton(threadUrl, accessToken)
+  }
+
+  private addGreeting = async (url: string, access_token: string) => {
     const options = {
       method: 'POST',
       url,
@@ -71,7 +77,7 @@ export default class Initialize {
     }
   }
 
-  addDefaultButton = async (url: string, access_token: string) => {
+  private addDefaultButton = async (url: string, access_token: string) => {
     const options = {
       method: 'POST',
       url,

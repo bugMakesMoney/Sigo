@@ -34,6 +34,7 @@ export default class cafeteria extends base {
     const { year, month } = date || this.currentDate
     targetDate = year.toString() + month.toString()
     this.url = this.url.replace('{targetDate}', targetDate)
+
     try {
       const body = await request(this.url)
       const data = cheerio.load(body, {
@@ -48,7 +49,7 @@ export default class cafeteria extends base {
       this.loadCafeteria()
     }
   }
-  public getCafeteria = (options?) => {
+  public getCafeteria = async (options?) => {
     let { date: _reloadDate } = (this.currentDate = this.reloadCurrentDate())
     if (_reloadDate !== this.currentDate.date) {
       console.log('date is changed. load new cafeteria')
@@ -61,16 +62,18 @@ export default class cafeteria extends base {
     const { type, value } = (this.options = options)
     const { date } = this.currentDate
 
-    if (type === TYPE.TODAY) this.rmqtlr = parseCafeteria(this.data, date, type)
+    if (type === TYPE.TODAY)
+      this.rmqtlr = await parseCafeteria(this.data, date, type)
     if (type === TYPE.TOMORROW)
-      this.rmqtlr = parseCafeteria(this.data, date + 1, type)
+      this.rmqtlr = await parseCafeteria(this.data, date + 1, type)
     if (type === TYPE.TARGET)
-      this.rmqtlr = parseCafeteria(this.data, value, type)
+      this.rmqtlr = await parseCafeteria(this.data, value, type)
     if (type === TYPE.DAYKO)
-      this.rmqtlr = parseCafeteria(this.data, date, type, value)
-    if (type === TYPE.THIS) this.rmqtlr = parseCafeteria(this.data, date, type)
+      this.rmqtlr = await parseCafeteria(this.data, date, type, value)
+    if (type === TYPE.THIS)
+      this.rmqtlr = await parseCafeteria(this.data, date, type)
     if (type === TYPE.NEXT)
-      this.rmqtlr = parseCafeteria(this.data, date + 7, type)
+      this.rmqtlr = await parseCafeteria(this.data, date + 7, type)
     if (type === TYPE.ERROR) this.rmqtlr = { type }
 
     return this.rmqtlr
