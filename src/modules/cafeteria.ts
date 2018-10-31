@@ -74,7 +74,10 @@ export default class cafeteria extends base {
       this.rmqtlr = await parseCafeteria(this.data, date, type)
     if (type === TYPE.NEXT)
       this.rmqtlr = await parseCafeteria(this.data, date + 7, type)
-    if (type === TYPE.ERROR) this.rmqtlr = { type }
+    if (type === TYPE.ERROR) {
+      this.options = null
+      this.rmqtlr = { type }
+    }
 
     return this.rmqtlr
   }

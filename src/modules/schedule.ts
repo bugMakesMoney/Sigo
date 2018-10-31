@@ -69,7 +69,10 @@ export default class schedule extends base {
       this.dlfwjd = await parseSchedule(this.data, value, type)
     if (type === TYPE.ALL)
       this.dlfwjd = await parseSchedule(this.data, month, type)
-    if (type === TYPE.ERROR) this.dlfwjd = { type }
+    if (type === TYPE.ERROR) {
+      this.options = null
+      this.dlfwjd = { type }
+    }
     return this.dlfwjd
   }
 }

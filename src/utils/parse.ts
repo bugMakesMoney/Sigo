@@ -105,7 +105,7 @@ export const parseCafeteria = async (
       return {
         type,
         data: await parseWeekCafeteria(
-          await loadNewCafeteria(month, index - endDay)
+          await loadNewCafeteria(month + 1, index - endDay)
         ),
       }
     }
@@ -125,6 +125,15 @@ export const parseCafeteria = async (
     return {
       type,
       data: await parseTargetCafeteria(currentData, index),
+    }
+  }
+
+  const month = new Date().getMonth() + 1
+  const endDay = checkEndDay(month)
+  if (index > endDay) {
+    return {
+      type,
+      data: await parseDayCafeteria(await loadNewCafeteria(month + 1, 1)),
     }
   }
 
@@ -174,7 +183,7 @@ const parseTargetCafeteria = (
 
 const loadNewCafeteria = async (month, index) => {
   const year = new Date().getFullYear()
-  const targetDate = `${year}${month + 1}`
+  const targetDate = `${year}${month}`
   const url = cafeteriaUrl.replace(`{targetDate}`, targetDate)
   try {
     const body = await request(url)
@@ -221,7 +230,7 @@ const parseWeekCafeteria = ({
               : `${e} ${KoDayType(index)}요일 급식\n급식을 먹는날이 아닙니다`
           }
           count++
-          return getNextCafeteria(month, count - 2)
+          return getNextCafeteria(month + 1, count - 2)
         })
     })
     .reduce((prev, dataArray) => {
