@@ -14,25 +14,25 @@ export default class eventAttachments {
   on = async (app: fbMessenger, userId: string) => {
     this.app = app
     this.userId = userId
-    const { message } = this
+    const { message, sendImage, sendDisallowFile } = this
     const attachments = message.getAttachments()
     return attachments.forEach(async attachment => {
       const {
         type,
         payload: { url: imageUrl },
       } = attachment
-      if (type === 'image') return await this.sendImage(imageUrl)
-      if (type !== 'image') return await this.sendDisallowFile()
+      if (type === 'image') return await sendImage(imageUrl)
+      if (type !== 'image') return await sendDisallowFile()
     })
   }
 
-  sendImage = async (imageUrl: string) => {
+  private sendImage = async (imageUrl: string) => {
     const { app, userId } = this
     await app.sendImageUrl(userId, imageUrl)
     await MessageModel.saveMessage({ userId, imageUrl })
   }
 
-  sendDisallowFile = async () => {
+  private sendDisallowFile = async () => {
     const { app, userId } = this
     app.sendTextMessage(userId, Constants.SEND_DISALLOW_FILE)
   }

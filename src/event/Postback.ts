@@ -13,24 +13,34 @@ export default class eventPostback {
   on = async (app: fbMessenger, userId: string) => {
     this.app = app
     this.userId = userId
-    const { payload } = this
+    const { payload, helpSchedule, helpReport, helpStarted } = this
     if (payload === PayloadTypes.HELP_CAFETERIA)
       return await this.helpCafeteria()
-    if (payload === PayloadTypes.HELP_SCHEDULE) return await this.helpSchedule()
-    if (payload === PayloadTypes.HELP_REPORT) return await this.helpReport()
+    if (payload === PayloadTypes.HELP_SCHEDULE) return await helpSchedule()
+    if (payload === PayloadTypes.HELP_REPORT) return await helpReport()
+    if (payload === PayloadTypes.HELP_STARTED) return await helpStarted()
   }
 
-  helpCafeteria = async () => {
+  private helpStarted = async () => {
+    const { app, userId } = this
+    const { first_name } = await app.getUserProfile(userId)
+    await app.sendTextMessage(
+      userId,
+      `안녕 ${first_name}!\n\n${Constants.SEND_STARTED}`
+    )
+  }
+
+  private helpCafeteria = async () => {
     const { app, userId } = this
     await app.sendTextMessage(userId, Constants.SEND_HELP_CAFETERIA)
   }
 
-  helpSchedule = async () => {
+  private helpSchedule = async () => {
     const { app, userId } = this
     await app.sendTextMessage(userId, Constants.SEND_HELP_SCHEDULE)
   }
 
-  helpReport = async () => {
+  private helpReport = async () => {
     const { app, userId } = this
     await app.sendTextMessage(userId, Constants.SEND_HELP_REPORT)
   }

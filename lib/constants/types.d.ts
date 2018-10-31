@@ -14,4 +14,9 @@ export declare const ActionTypes: {
     TYPING_ON: string;
     TYPING_OFF: string;
 };
+export declare const notificationType: {
+    REGULAR: string;
+    SILENT_PUSH: string;
+    NO_PUSH: string;
+};
 export declare const MessageTypes: string[];

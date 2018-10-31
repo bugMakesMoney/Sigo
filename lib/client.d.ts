@@ -36,6 +36,8 @@ export default class client {
         reusable: any;
     }) => any;
     protected sendQuickReply: (recipientId: any, { text, quick_replies }: ReplyMessageModel) => any;
+    protected createBroadcast: (messages: any) => any;
+    protected braodcast: (broadCastData: any) => any;
     protected getUser: (userId: any) => any;
     private sendRequest;
 }

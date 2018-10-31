@@ -24,7 +24,7 @@ const sendSchedule = schedule => {
   try {
     const { type, data } = schedule
     console.log('send schedule')
-    if (type === TYPE.THIS) return `이빈 달 일정입니다\n\n${data}`
+    if (type === TYPE.THIS) return `이번 달 일정입니다\n\n${data}`
     if (type === TYPE.NEXT) return `다음 달 일정입니다\n\n${data}`
     if (type === TYPE.TARGET) return data
     if (type === TYPE.ALL) return `이번 년도 전체 일정입니다\n${data}`

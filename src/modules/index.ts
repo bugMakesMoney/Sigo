@@ -35,6 +35,7 @@ export default class Initialize {
 
     db.flushAll()
 
+    this.addOn()
     return {
       app,
       cafeteria: new Cafeteria(),
@@ -42,16 +43,43 @@ export default class Initialize {
     }
   }
 
-  addOn() {
+  addOn = async () => {
     const { app } = this
     const { endpoint, version, accessToken } = app.getAppInfo()
-    const threadUrl = `${endpoint}/${version}/me/thread_settings`
+    const url = `${endpoint}/${version}/me/thread_settings`
 
-    this.addGreeting(threadUrl, accessToken)
-    this.addDefaultButton(threadUrl, accessToken)
+    const greetingMessage = '안녕 {{user_first_name}}!'
+
+    await this.addGreeting(url, accessToken, greetingMessage)
+    await this.addStarted(url, accessToken)
+    await this.addDefaultButton(url, accessToken)
   }
 
-  private addGreeting = async (url: string, access_token: string) => {
+  private addGreeting = async (url: string, access_token: string, text) => {
+    const options = {
+      method: 'POST',
+      url,
+      qs: {
+        access_token,
+      },
+      json: true,
+      body: {
+        setting_type: 'greeting',
+        greeting: {
+          text,
+        },
+      },
+    }
+
+    try {
+      await request(options)
+      console.info('add greeting')
+    } catch (err) {
+      console.log(err.message)
+    }
+  }
+
+  private addStarted = async (url: string, access_token: string) => {
     const options = {
       method: 'POST',
       url,
@@ -64,14 +92,14 @@ export default class Initialize {
         thread_state: 'new_thread',
         call_to_actions: [
           {
-            payload: 'STARTED',
+            payload: 'HELP_STARTED',
           },
         ],
       },
     }
     try {
       await request(options)
-      console.info('add greeting')
+      console.info('add started')
     } catch (err) {
       console.log(err.message)
     }
@@ -111,7 +139,7 @@ export default class Initialize {
       await request(options)
       console.info('add default button')
     } catch (err) {
-      console.log(err)
+      console.log(err.message)
     }
   }
 

@@ -27,7 +27,7 @@ export default class report {
     } = this
     const url = `${endpoint}/${version}/me/feed`
     const reportsCount = await ReportModel.getReportsCount()
-    const message = `#${reportsCount + 1}번째 제보입니다\n
+    const message = `#${reportsCount + 1}번째지잡생의외침\n
     ${isAnonymous ? '익명의 제보' : userName + '님의 제보'}\n
     ${reportText}`
 

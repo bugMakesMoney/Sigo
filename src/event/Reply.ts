@@ -2,7 +2,7 @@ import { Constants, PayloadTypes } from '../constants'
 import { fbMessenger } from '../types'
 import db from '../manage/db'
 import { Report } from '../modules'
-import { ReplyMessage } from '../../lib'
+import { ReplyMessage, Broadcast } from '../../lib'
 import { UserModel, ReportModel } from '../manage/model'
 
 export default class eventReply {
@@ -24,6 +24,12 @@ export default class eventReply {
       replyPicturesNo,
       replyAnonymousYes,
       replyAnonymosNo,
+      replyBroadcast,
+      replyBroadcastYes,
+      replyBroadcastNo,
+      replyGreeting,
+      replyGreetingYes,
+      replyGreetingNo,
     } = this
     const {
       REPLY_REPORT_YES,
@@ -32,6 +38,12 @@ export default class eventReply {
       REPLY_PICTURES_NO,
       REPLY_ANONYMOUS_YES,
       REPLY_ANONYMOUS_NO,
+      REPLY_BROADCAST,
+      REPLY_BROADCAST_YES,
+      REPLY_BROADCAST_NO,
+      REPLY_GREETING,
+      REPLY_GREETING_YES,
+      REPLY_GREETING_NO,
     } = PayloadTypes
     if (payload === REPLY_REPORT_YES) return await replyReportYes()
     if (payload === REPLY_REPORT_NO) return await replyReportNo()
@@ -39,6 +51,79 @@ export default class eventReply {
     if (payload === REPLY_PICTURES_NO) return await replyPicturesNo()
     if (payload === REPLY_ANONYMOUS_YES) return await replyAnonymousYes()
     if (payload === REPLY_ANONYMOUS_NO) return await replyAnonymosNo()
+    if (payload === REPLY_BROADCAST) return await replyBroadcast()
+    if (payload === REPLY_BROADCAST_YES) return await replyBroadcastYes()
+    if (payload === REPLY_BROADCAST_NO) return await replyBroadcastNo()
+    if (payload === REPLY_GREETING) return await replyGreeting()
+    if (payload === REPLY_GREETING_YES) return await replyGreetingYes()
+    if (payload === REPLY_GREETING_NO) return await replyGreetingNo()
+  }
+
+  private replyGreeting = async () => {
+    const { app, userId } = this
+    await db.hsetAsync(userId, 'step', Constants.STEP_CREATE_GREETING)
+    await app.sendTextMessage(userId, Constants.SEND_GREETING_MESSAGE)
+  }
+
+  private replyGreetingYes = async () => {
+    const { app, userId } = this
+    const greetingMessage = await db.hgetAsync(userId, 'greetingMessage')
+
+    const { message_creative_id } = await app.createDynamicBraodcast({
+      text: greetingMessage,
+      fallback_text: greetingMessage,
+    })
+
+    const broadcast = new Broadcast(
+      message_creative_id,
+      'REGULAR',
+      'message_tag',
+      'NON_PROMOTIONAL_SUBSCRIPTION'
+    )
+    await app.sendBraodcast(broadcast.buildBroadcast())
+    await app.sendTextMessage(userId, Constants.SEND_GREETING)
+    await app.sendTextMessage(userId, Constants.SEND_ADMIN_MODE_CANCEL)
+    await db.delAsync([userId])
+  }
+
+  private replyGreetingNo = async () => {
+    const { app, userId } = this
+    await app.sendTextMessage(userId, Constants.SEND_GREETING_CANCEL)
+    await app.sendTextMessage(userId, Constants.SEND_ADMIN_MODE_CANCEL)
+    await db.delAsync([userId])
+  }
+
+  private replyBroadcast = async () => {
+    const { app, userId } = this
+    await db.hsetAsync(userId, 'step', Constants.STEP_CREATE_BROADCAST)
+    await app.sendTextMessage(userId, Constants.SEND_BROADCAST_MESSAGE)
+  }
+
+  private replyBroadcastYes = async () => {
+    const { app, userId } = this
+    const broadCastMessage = await db.hgetAsync(userId, 'braodCastMessage')
+
+    const { message_creative_id } = await app.createBroadcastMessage(
+      broadCastMessage
+    )
+
+    const broadcast = new Broadcast(
+      message_creative_id,
+      'REGULAR',
+      'message_tag',
+      'NON_PROMOTIONAL_SUBSCRIPTION'
+    )
+    await app.sendBraodcast(broadcast.buildBroadcast())
+    await app.sendTextMessage(userId, Constants.SEND_BROADCAST)
+    await app.sendTextMessage(userId, Constants.SEND_ADMIN_MODE_CANCEL)
+    await db.delAsync([userId])
+  }
+
+  private replyBroadcastNo = async () => {
+    const { app, userId } = this
+    await app.sendTextMessage(userId, Constants.SEND_BROADCAST_CANCEL)
+    await app.sendTextMessage(userId, Constants.SEND_ADMIN_MODE_CANCEL)
+    await db.delAsync([userId])
   }
 
   private replyPicturesYes = async () => {
@@ -60,9 +145,7 @@ export default class eventReply {
     const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
     await app.sendTextMessage(
       userId,
-      `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
-        Boolean(isAnonymous) ? 'O' : 'X'
-      }\n내용 : ${reportText}`
+      `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : O\n내용 : ${reportText}`
     )
 
     const replyIsConfirm = new ReplyMessage(Constants.REPLY_REPORT_CONFIRM)
@@ -78,9 +161,7 @@ export default class eventReply {
     const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
     await app.sendTextMessage(
       userId,
-      `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
-        Boolean(isAnonymous) ? 'O' : 'X'
-      }\n내용 : ${reportText}`
+      `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : X\n내용 : ${reportText}`
     )
 
     const replyIsConfirm = new ReplyMessage(Constants.REPLY_REPORT_CONFIRM)

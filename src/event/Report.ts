@@ -15,7 +15,15 @@ export default class eventReport {
   on = async (app: fbMessenger, userId: string, message: MessageType) => {
     this.app = app
     this.userId = userId
-    const { step } = this
+    const {
+      step,
+      cancel,
+      stepReportText,
+      stepTextPictures,
+      stepAnonymous,
+      stepConfirm,
+      stepPictures,
+    } = this
 
     const {
       CANCEL,
@@ -27,14 +35,14 @@ export default class eventReport {
     const isText = message.isText()
     if (isText) {
       const text = message.getText()
-      if (text === CANCEL) return await this.cancel()
-      if (step === STEP_REPORT_TEXT) return await this.stepReportText(text)
-      if (step === STEP_PICTURES) return await this.stepTextPictures(text)
-      if (step === STEP_ANONYMOUS) return await this.stepAnnonymous(text)
-      if (step === STEP_CONFIRM) return await this.stepConfirm(text)
+      if (text === CANCEL) return await cancel()
+      if (step === STEP_REPORT_TEXT) return await stepReportText(text)
+      if (step === STEP_PICTURES) return await stepTextPictures(text)
+      if (step === STEP_ANONYMOUS) return await stepAnonymous(text)
+      if (step === STEP_CONFIRM) return await stepConfirm(text)
     }
     const attachments = message.getAttachments()
-    if (step === STEP_PICTURES) return await this.stepPictures(attachments)
+    if (step === STEP_PICTURES) return await stepPictures(attachments)
   }
 
   private stepReportText = async text => {
@@ -107,7 +115,7 @@ export default class eventReport {
     await MessageModel.saveMessage({ userId, text })
   }
 
-  private stepAnnonymous = async text => {
+  private stepAnonymous = async text => {
     const { app, userId } = this
     const {
       PLZ_SEND_CORRECT,
@@ -122,9 +130,7 @@ export default class eventReport {
     if (text === YES) {
       await app.sendTextMessage(
         userId,
-        `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
-          Boolean(isAnonymous) ? 'O' : 'X'
-        }\n내용 : ${reportText}`
+        `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : O\n내용 : ${reportText}`
       )
 
       const replyIsConfirm = new ReplyMessage(REPLY_REPORT_CONFIRM)
@@ -139,9 +145,7 @@ export default class eventReport {
     if (text === NO) {
       await app.sendTextMessage(
         userId,
-        `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : ${
-          Boolean(isAnonymous) ? 'O' : 'X'
-        }\n내용 : ${reportText}`
+        `${Constants.PLZ_CHECK_REPORT}\n\n익명여부 : X\n내용 : ${reportText}`
       )
 
       const replyIsConfirm = new ReplyMessage(REPLY_REPORT_CONFIRM)

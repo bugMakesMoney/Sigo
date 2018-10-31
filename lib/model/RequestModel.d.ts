@@ -20,6 +20,7 @@ interface requestFailModel {
 }
 export interface UserProfileModel {
     name: string;
+    first_name: string;
     profile_pic: string;
     gender: string;
 }

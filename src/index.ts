@@ -11,6 +11,7 @@ import {
   EventText,
   EventAttachments,
   EventPostback,
+  EventAdmin,
 } from './event'
 
 const initialize = new Initialize()
@@ -32,6 +33,13 @@ app.subscribe(EventTypes.MESSAGE, async (userId, message: MessageType) => {
       const step = await db.hgetAsync(userId, 'step')
       const eventReport = new EventReport(step)
       return await eventReport.on(app, userId, message)
+    }
+
+    const isAdminMode = Boolean(await db.hgetAsync(userId, 'isAdminMode'))
+    if (isAdminMode) {
+      const step = await db.hgetAsync(userId, 'step')
+      const eventAdmin = new EventAdmin(step)
+      return await eventAdmin.on(app, userId, message.getText())
     }
 
     if (message.isText()) {

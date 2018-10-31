@@ -1,7 +1,7 @@
 import client from './client';
 import { ReplyMessageModel, UserProfileModel } from './model';
 export declare class fbMessenger extends client {
-    sendTextMessage: (senderId: any, textMessage: any) => any;
+    sendTextMessage: (senderId: any, message: any) => any;
     sendTypingOn: (senderId: any) => any;
     sendTypingOff: (senderId: any) => any;
     sendImageUrl: (senderId: any, payload_url: string, reusable?: Boolean) => any;
@@ -14,4 +14,7 @@ export declare class fbMessenger extends client {
         appSecret: string;
         accessToken: string;
     };
+    createBroadcastMessage: (message: any) => any;
+    createDynamicBraodcast: (message: any) => any;
+    sendBraodcast: (broadCastData: any) => any;
 }

@@ -4,6 +4,7 @@ import { fbMessenger, Cafeteria, Schedule } from '../types'
 import bot from '../bot'
 import { UserModel } from '../manage/model'
 import db from '../manage/db'
+import { ReplyMessage } from '../../lib'
 
 export default class eventText {
   private matchResult: MatchResultModel
@@ -26,18 +27,32 @@ export default class eventText {
 
     const {
       matchResult: { module, options },
+      adminMode,
+      moduleCafeteria,
+      moduleSchedule,
+      moduleReport,
+      moduleEcho,
+      moduleOverlap,
     } = this
     const { type = null } = options || {}
     const { CAFETERIA, SCHEDULE, REPORT, ECHO } = MODULE
     const { OVERLAP } = TYPE
-    if (module === CAFETERIA) return await this.moduleCafeteria(cafeteria)
-    if (module === SCHEDULE) return await this.moduleSchedule(schedule)
-    if (module === REPORT) return await this.moduleReport()
-    if (module === ECHO) return await this.moduleEcho(text)
-    if (type === OVERLAP) return await this.moduleOverlap(options)
+    if (text === Constants.ADMIN) return await adminMode()
+    if (module === CAFETERIA) return await moduleCafeteria(cafeteria)
+    if (module === SCHEDULE) return await moduleSchedule(schedule)
+    if (module === REPORT) return await moduleReport()
+    if (module === ECHO) return await moduleEcho(text)
+    if (type === OVERLAP) return await moduleOverlap(options)
   }
 
-  moduleCafeteria = async cafeteria => {
+  private adminMode = async () => {
+    const { app, userId } = this
+    await app.sendTextMessage(userId, Constants.PLZ_ADMIN_PW)
+    await db.hsetAsync(userId, 'isAdminMode', true)
+    await db.hsetAsync(userId, 'step', Constants.STEP_ADMIN_PW)
+  }
+
+  private moduleCafeteria = async cafeteria => {
     const {
       app,
       userId,
@@ -49,7 +64,7 @@ export default class eventText {
     )
   }
 
-  moduleSchedule = async schedule => {
+  private moduleSchedule = async schedule => {
     const {
       app,
       userId,
@@ -61,7 +76,7 @@ export default class eventText {
     )
   }
 
-  moduleReport = async () => {
+  private moduleReport = async () => {
     const { app, userId } = this
     const { SORRY_COUNT_REPORT, PLZ_SEND_REPORT } = Constants
     const { reportCount = 0, lastReportDate = new Date() } =
@@ -81,12 +96,12 @@ export default class eventText {
     }
   }
 
-  moduleEcho = async text => {
+  private moduleEcho = async text => {
     const { app, userId } = this
     await app.sendTextMessage(userId, text)
   }
 
-  moduleOverlap = async options => {
+  private moduleOverlap = async options => {
     const { app, userId } = this
     await app.sendTextMessage(userId, bot.sendOverlap(options))
   }
