@@ -23,10 +23,9 @@ db.once('open', () => {
   console.log('connected to mongo server')
 })
 
-mongoose.connect(
-  MONGODB_URI ? MONGODB_URI : 'mongodb://localhost/sigo',
-  { useNewUrlParser: true }
-)
+mongoose.connect(MONGODB_URI ? MONGODB_URI : 'mongodb://localhost/sigo', {
+  useNewUrlParser: true,
+})
 
 const flushAll = promisify(client.flushall).bind(client)
 const hgetAsync = promisify(client.hget).bind(client)

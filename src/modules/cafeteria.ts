@@ -32,7 +32,10 @@ export default class cafeteria extends base {
     let targetDate: string
     this.currentDate = this.reloadCurrentDate()
     const { year, month } = date || this.currentDate
-    targetDate = year.toString() + month.toString()
+
+    targetDate = `${year.toString()}${
+      month < 10 ? '0' + month.toString() : month.toString()
+    }`
     this.url = this.url.replace('{targetDate}', targetDate)
 
     try {
@@ -42,6 +45,7 @@ export default class cafeteria extends base {
         normalizeWhitespace: false,
       })
       this.data = data('tbody')
+
       console.log('load cafeteria data')
     } catch (err) {
       console.error('load cafeteria err', err)
@@ -51,19 +55,29 @@ export default class cafeteria extends base {
   }
   public getCafeteria = async (options?) => {
     let { date: _reloadDate } = (this.currentDate = this.reloadCurrentDate())
+
+    console.log('a')
+
     if (_reloadDate !== this.currentDate.date) {
       console.log('date is changed. load new cafeteria')
       this.loadCafeteria()
     }
-    if (JSON.stringify(this.options) === JSON.stringify(options)) {
+
+    if (
+      JSON.stringify(this.options) === JSON.stringify(options) &&
+      this.options
+    ) {
       console.log('same options')
       return this.rmqtlr
     }
-    const { type, value } = (this.options = options)
+
+    const { type = '', value = '' } = (this.options = options) || {}
+
     const { date } = this.currentDate
 
-    if (type === TYPE.TODAY)
+    if (type === TYPE.TODAY) {
       this.rmqtlr = await parseCafeteria(this.data, date, type)
+    }
     if (type === TYPE.TOMORROW)
       this.rmqtlr = await parseCafeteria(this.data, date + 1, type)
     if (type === TYPE.TARGET)

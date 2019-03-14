@@ -2,7 +2,7 @@ import { TYPE } from './constants/matchTypes'
 
 const sendCafeteria = cafeteria => {
   try {
-    const { type = '', data } = cafeteria
+    const { type = '', data = '' } = cafeteria || {}
     console.log('send cafeteria')
     if (type === TYPE.TODAY)
       return data ? `오늘 급식\n\n${data}` : '오늘은 급식을 먹는 날이 아닙니다'
@@ -22,7 +22,7 @@ const sendCafeteria = cafeteria => {
 
 const sendSchedule = schedule => {
   try {
-    const { type = '', data } = schedule
+    const { type = '', data = '' } = schedule || {}
     console.log('send schedule')
     if (type === TYPE.THIS) return `이번 달 일정입니다\n\n${data}`
     if (type === TYPE.NEXT) return `다음 달 일정입니다\n\n${data}`

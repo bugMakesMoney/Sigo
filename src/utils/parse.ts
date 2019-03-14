@@ -36,9 +36,8 @@ const commonParseSchedule = data => {
           .map(({ children }) =>
             children
               .filter(({ data, children }) => Number(data) || children)
-              .map(
-                ({ data, children }) =>
-                  data ? `${data}일` : children.map(({ data }) => data).join('')
+              .map(({ data, children }) =>
+                data ? `${data}일` : children.map(({ data }) => data).join('')
               )
               .join('')
           )
@@ -97,7 +96,6 @@ export const parseCafeteria = async (
     .find(
       ({ firstChild }) => firstChild && firstChild.data === index.toString()
     )
-
   if (type === TYPE.NEXT || type === TYPE.THIS) {
     const month = new Date().getMonth() + 1
     const endDay = checkEndDay(month)
@@ -152,6 +150,8 @@ const parseTargetCafeteria = (
   index: number
 ) => {
   let targetIndex
+
+  console.log(children)
   return children
     .filter(({ children }) => children)
     .filter(({ children }, i) =>

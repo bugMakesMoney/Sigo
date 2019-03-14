@@ -58,7 +58,7 @@ export default class schedule extends base {
       return this.dlfwjd
     }
 
-    const { type, value } = (this.options = options)
+    const { type = '', value = '' } = (this.options = options) || {}
     const { month } = this.currentDate
 
     if (type === TYPE.THIS)
