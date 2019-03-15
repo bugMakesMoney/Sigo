@@ -177,6 +177,9 @@ export default class eventReport {
       const { accessToken, version, endpoint } = app.getAppInfo()
       const { reportText, isAnonymous } = await db.hgetAllAsync(userId)
       const pictures = await db.lrangeAsync(userId + 'pic', 0, -1)
+
+      console.log(isAnonymous)
+      console.log(userName)
       const report = new Report({
         userId,
         userName,
