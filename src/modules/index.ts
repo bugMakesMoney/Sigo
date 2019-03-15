@@ -32,6 +32,9 @@ export default class Initialize {
     this.app = new fbMessenger(config, server)
     const { app } = this
     express.use(app.setWebhook(webhookUrl))
+    express.get('/', (req, res) => {
+      res.send('sigo facebook bot')
+    })
 
     db.flushAll()
 
