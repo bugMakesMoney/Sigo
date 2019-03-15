@@ -5,7 +5,7 @@ import { ReportModel } from '../manage/model'
 export default class report {
   userId: string
   userName: string
-  isAnonymous: boolean
+  isAnonymous: string
   reportText: string
   pictures?: string[]
   accessToken: string
@@ -27,9 +27,8 @@ export default class report {
     } = this
     const url = `${endpoint}/${version}/me/feed`
     const reportsCount = await ReportModel.getReportsCount()
-    console.log(this.isAnonymous)
     const message = `#${reportsCount + 1}번째지잡생의외침\n
-    ${isAnonymous ? '익명의 제보' : userName + '님의 제보'}\n
+    ${JSON.parse(isAnonymous) ? '익명의 제보' : userName + '님의 제보'}\n
     ${reportText}`
 
     let options = {
