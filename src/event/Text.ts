@@ -79,12 +79,13 @@ export default class eventText {
   private moduleReport = async () => {
     const { app, userId } = this
     const { SORRY_COUNT_REPORT, PLZ_SEND_REPORT } = Constants
-    const { reportCount = 0, lastReportDate = new Date() } =
+    let { reportCount = 0, lastReportDate = new Date() } =
       (await UserModel.findById(userId)) || {}
     const date = lastReportDate.getDate()
 
     if (date !== new Date().getDate()) {
       await UserModel.resetReportCount(userId)
+      reportCount = 0
     }
 
     if (reportCount > 2) {
