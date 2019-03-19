@@ -14,9 +14,7 @@
         'https://graph.facebook.com/v3.2/237128443628614/feed',
         {
           method: 'POST',
-          body: {
-            message,
-          },
+          body: `{"message": ${message}}`,
         }
       )
 
