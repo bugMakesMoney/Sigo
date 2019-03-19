@@ -19,12 +19,16 @@
           }
         )
           .then(res => {
+            console.log(res.ok)
             if (!res.ok) throw res
             return res.json()
           })
           .then(res => {
+            console.log(res)
             alert(
-              `성공적으로 업로드 되었습니다. 작성한 게시글로 이동하기 : https://www.facebook.com/${id}`
+              `성공적으로 업로드 되었습니다. 작성한 게시글로 이동하기 : https://www.facebook.com/${
+                res.id
+              }`
             )
           })
           .catch(err => {
