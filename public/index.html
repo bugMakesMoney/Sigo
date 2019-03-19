@@ -1,0 +1,34 @@
+<html>
+  <body>
+    페이지에 작성할 내용을 입력해주세요
+    <input type="text" />
+
+    <button onclick="publish()">게시하기</button>
+  </body>
+
+  <script>
+    const publish = () => {
+      const message = document.querySelector('input').value
+
+      const request = new Request(
+        'https://graph.facebook.com/v3.2/237128443628614/feed',
+        {
+          method: 'POST',
+          body: {
+            message,
+          },
+        }
+      )
+
+      fetch(request)
+        .then(res => {
+          if (res.status === 200) return res.json()
+          throw new Error()
+        })
+        .then(res => {
+          console.log(res)
+        })
+        .catch(err => console.log(err))
+    }
+  </script>
+</html>

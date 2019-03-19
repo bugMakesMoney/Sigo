@@ -6,6 +6,7 @@ import * as Express from 'express'
 import { fbMessenger } from '../../lib'
 import * as Http from 'http'
 import db from '../manage/db'
+import * as path from 'path'
 
 export { Cafeteria, Schedule, Report }
 
@@ -17,9 +18,9 @@ export default class Initialize {
   constructor() {
     const { APP_SECRET, ACCESS_TOKEN, VERIFY_TOKEN } = process.env
     this.config = {
-      appSecret: APP_SECRET,
-      accessToken: ACCESS_TOKEN,
-      verifyToken: VERIFY_TOKEN,
+      appSecret: APP_SECRET || 'asd',
+      accessToken: ACCESS_TOKEN || 'asd',
+      verifyToken: VERIFY_TOKEN || 'asd',
     }
   }
 
@@ -32,8 +33,9 @@ export default class Initialize {
     this.app = new fbMessenger(config, server)
     const { app } = this
     express.use(app.setWebhook(webhookUrl))
+
     express.get('/', (req, res) => {
-      res.send('sigo facebook bot')
+      res.sendFile(path.join(__dirname + '../../../public/index.html'))
     })
 
     db.flushAll()
