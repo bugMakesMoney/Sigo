@@ -10,18 +10,18 @@
     const publish = () => {
       const message = document.querySelector('input').value
 
-      const request = new Request(
+      fetch(
         'https://graph.facebook.com/v3.2/me/feed?access_token=EAADXqsSmDEYBAL89W5lsWJwXgX7RIyiSHNpfCP5B8rKDJPnwZAsR4NirgZByXg6wdXgEZBKrPOGqVkWtvFMO3WGe6YS8fu7r2v5XDXfuOAMkns3O88cAc1ZBRhcP2m0azSaAahxHLHDbEDLhQwPuGRNZAxzXgDjTTHbZC7vFN21ZCQwcywPkicp',
         {
           method: 'POST',
-          body: `{"message": ${message}}`,
+          body: JSON.stringify({
+            message,
+          }),
         }
       )
-
-      fetch(request)
         .then(res => {
           if (res.status === 200) return res.json()
-          return
+          return res
         })
         .then(res => {
           console.log(res)
